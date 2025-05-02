@@ -3,13 +3,17 @@
 ## Info
 
 **WINDOWS ONLY**
+
 Relies on Windows WASAPI to sample sound info from the default audio device. 
 This way you can run the .exe and play any audio you want, including encrypted 
 downloads on your favorite music streaming app.
 
 STD = C++20
+
 SFML Version 3.0.1 for graphics
+
 kissFFT for Audio Fast Fourier Transform
+
 MSVC 2022
 
 ## Usage
