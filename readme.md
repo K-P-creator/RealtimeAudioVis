@@ -51,9 +51,15 @@ and build
 
 ```ctrl+shift+B```
 
+
+
 Then run with
 
 ```F5```
 
 If you run in release mode, optimizations will be enabled and latency may be
 slightly lower.
+
+
+https://github.com/user-attachments/assets/771fb0da-d05f-456d-b158-cae72f4cc78b
+
