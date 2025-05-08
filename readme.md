@@ -11,6 +11,7 @@ downloads on your favorite music streaming app.
 STD = C++20
 
 SFML Version 3.0.1 for graphics
+I created a custom sf::Curve class for drawing curves. I will add a ComplexCurve class eventually for better looking curve type graphs.
 
 kissFFT for Audio Fast Fourier Transform
 
@@ -32,7 +33,7 @@ Use:
 
 ```M```
 
-to toggle visualization mode. Right now there is default, symmetric double symmetric, and double sym with smoothing (my favorite).
+to toggle visualization mode. Right now there is default, symmetric double symmetric, double sym with smoothing (my favorite), and curve with smoothing.
 
 Use:
 
