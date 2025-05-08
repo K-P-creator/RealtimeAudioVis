@@ -441,3 +441,60 @@ void AudioManager::RenderAudioWithSmoothing(sf::RenderWindow* w) {
 	magnitudes.clear();
 	magnitudes.resize(FFT_COUNT / 2);
 }
+
+
+// Render as a curve (with smoothing)
+void AudioManager::RenderAudioCurve(sf::RenderWindow* w) {
+	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioCurve()"));
+
+	sf::Curve c({ 0, 0 }, { 0, 0 }, { 0, 0 });
+	c.setThickness(5.0f);
+	c.setVertexCount(50);
+
+	auto widthScale = static_cast<float>(WINDOW_WIDTH / (magnitudes.size() / 3));
+
+	bool first = false;
+	if (prevMagnitudes.empty())
+	{
+		prevMagnitudes.resize(FFT_COUNT / 2);
+		first = true;
+	}
+
+	std::vector <float> smoothedHeights;
+	smoothedHeights.resize(magnitudes.size());
+	for (unsigned int i = 0; i < magnitudes.size(); i++) {
+		if (magnitudes[i] <= 0.0f) {
+			smoothedHeights[i] = 0.0f;
+			continue;
+		}
+		// Height of the bar after applying smoothing
+		// If height is increasing, dont smooth. This increases responsiveness A LOT
+		if (!first)
+		{
+			smoothedHeights[i] = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
+			if (smoothedHeights[i] <= magnitudes[i]) smoothedHeights[i] = magnitudes[i];
+		}
+		else smoothedHeights[i] = magnitudes[i];
+	}
+
+	for (unsigned int i = 0; i < magnitudes.size(); i += 2) {
+		
+		// Draw the top half
+		c.setPoints({ static_cast<float>(i * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i]/2 }, 
+			{ static_cast<float>((i + 2) * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i + 2]/2 },
+			{ static_cast<float>((i + 1) * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i + 1]/2 });
+		c.setColor(GetColor(i, smoothedHeights[i + 1]));
+		w->draw(c);
+
+		// Draw the bottom half
+		c.setPoints({ static_cast<float>(i * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i] / 2 },
+			{ static_cast<float>((i + 2) * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i + 2] / 2 },
+			{ static_cast<float>((i + 1) * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i + 1] / 2 });
+		w->draw(c);
+
+		// Save the smoothed hieght as the prev height
+		prevMagnitudes[i] = smoothedHeights[i];
+	}
+
+
+}

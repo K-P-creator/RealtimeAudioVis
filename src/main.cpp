@@ -122,6 +122,10 @@ int main(){
                     cout << "Switching to double sym with smoothing\n";
                     graphType = 'n';
                 }
+				else if (graphType == 'n') {
+					cout << "Switching to curve\n";
+					graphType = 'c';
+				}
                 else 
                 {
                     cout << "Switching to default graph\n";
@@ -176,6 +180,10 @@ int main(){
                 break;
             case 'n':
                 am.RenderAudioWithSmoothing(&window);
+				break;
+			case 'c':
+				am.RenderAudioCurve(&window);
+				break;
             }
 
             window.display();
