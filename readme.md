@@ -11,7 +11,8 @@ downloads on your favorite music streaming app.
 STD = C++20
 
 SFML Version 3.0.1 for graphics
-I created a custom sf::Curve class for drawing curves. I will add a ComplexCurve class eventually for better looking curve type graphs.
+
+- I created a custom sf::Curve class for drawing curves. I will add a ComplexCurve class eventually for better looking curve type graphs.
 
 kissFFT for Audio Fast Fourier Transform
 
