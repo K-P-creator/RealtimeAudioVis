@@ -60,8 +60,12 @@ Then run with
 If you run in release mode, optimizations will be enabled and latency may be
 slightly lower.
 
-Heres a short demo of the curved graph with smoothing mode. 
+Heres a short demo.
 
 
-https://github.com/user-attachments/assets/771fb0da-d05f-456d-b158-cae72f4cc78b
+
+
+https://github.com/user-attachments/assets/17080c58-95d2-49f5-8764-724c7a3d2338
+
+
 
