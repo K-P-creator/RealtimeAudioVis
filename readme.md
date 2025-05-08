@@ -60,7 +60,7 @@ Then run with
 If you run in release mode, optimizations will be enabled and latency may be
 slightly lower.
 
-Heres a short demo.
+Heres a short demo of some color modes and the double sym smoothed and the curve modes.
 
 
 
