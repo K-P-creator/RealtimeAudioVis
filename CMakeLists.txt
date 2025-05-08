@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
-project(AudioVis LANGUAGES C CXX)
+project(AudioVis)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-# Set optimization flags for release mode
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
 
 # Fetch SFML from github
 include(FetchContent)
@@ -18,13 +15,8 @@ FetchContent_MakeAvailable(SFML)
 
 # Create kissfft as its own static library
 add_library(kissfft STATIC external/kissfft/kiss_fft.c)
-set_target_properties(kissfft PROPERTIES LINKER_LANGUAGE C)
+target_include_directories(kissfft PUBLIC external/kissfft)
 
-
-add_executable(AudioVis "src/main.cpp" "src/AudioManager.cpp")
+add_executable(AudioVis src/main.cpp src/AudioManager.cpp src/Curve.cpp src/PolyCurve.cpp)
 target_compile_features(AudioVis PRIVATE cxx_std_20)
-
-target_include_directories(AudioVis PRIVATE external/kissfft)
-
-target_link_libraries(AudioVis PRIVATE SFML::Graphics
-        SFML::Window SFML::System SFML::Audio kissfft)
+target_link_libraries(AudioVis PRIVATE SFML::Graphics SFML::Audio kissfft)
