@@ -22,6 +22,8 @@ extern "C" {
 #include <memory>
 
 #include "Globals.h"
+#include "Curve.hpp"
+#include "PolyCurve.hpp"
 
 
 
@@ -47,6 +49,12 @@ class AudioManager {
 
 		// two way mirror with smoothing
 		void RenderAudioWithSmoothing(sf::RenderWindow* w);
+
+		// Render as a curve (with smoothing)
+		void RenderAudioCurve(sf::RenderWindow* w);
+
+		// Render as a cubic curve (with smoothing)
+		void RenderAudioCubicCurve(sf::RenderWindow* w);
 
 		// No copys allowed
 		AudioManager(const AudioManager&) = delete;
