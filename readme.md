@@ -2,6 +2,10 @@
 
 ## Info
 
+### OpenGL branch
+
+This branch will switch to using openGL, glfw and imgui rather than SFML
+
 **WINDOWS ONLY**
 
 Relies on Windows WASAPI to sample sound info from the default audio device. 
