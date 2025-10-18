@@ -22,9 +22,9 @@ kissFFT for Audio Fast Fourier Transform
 
 MSVC 2022
 
-The goal of this project is to create a cool, customizable audio visualization tool that runs with super low latency. C++ is the perfect tool for the job. The kissFFT library I use is also super fast and written in C. The slowest part of the visualization is the drawing sequence with SFML. 
+The goal of this project is to create a cool, customizable audio visualization tool that runs with super low latency. C++ is the perfect tool for the job. The kissFFT library I use is also super fast and written in C. The slowest part of the visualization is the drawing sequence with SFML.
 
-I have plans to create a more user friendly expierience and I may add a settings menu as well as other additional display modes. I think some different approaches to graphing would be cool, such as a circular graph and maybe some special effects like a video background. 
+I have plans to create a more user friendly expierience and I may add a settings menu as well as other additional display modes. I think some different approaches to graphing would be cool, such as a circular graph and maybe some special effects like a video background.
 
 ## Usage
 
@@ -48,14 +48,13 @@ to toggle color modes. Theres a whole bunch of color modes and most of them scal
 
 ## Compilation
 
-Compiles with CMake. I use MSVC 2022 to build. 
+Compiles with CMake. I use MSVC 2022 to build.
 
-Open file with MSVC 
+Open file with MSVC
 
 and build
 
 ```ctrl+shift+B```
-
 
 
 Then run with
@@ -67,10 +66,4 @@ slightly lower.
 
 Heres a short demo of some color modes and the double sym smoothed and the curve modes.
 
-
-
-
 https://github.com/user-attachments/assets/17080c58-95d2-49f5-8764-724c7a3d2338
-
-
-
