@@ -11,7 +11,7 @@
 
 // KissFFT for audio transforms
 extern "C" {
-#include "../external/kissfft/kiss_fft.h"
+#include "kiss_fft.h"
 }
 
 // STL includes

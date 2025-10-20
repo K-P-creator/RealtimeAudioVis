@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME} src/main.cpp src/AudioManager.cpp)
 
-# glad/glfw3/imgui/OpenGL dependencies
+# glad/glfw3/imgui/OpenGL/kissfft dependencies
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glad::glad)
 
@@ -19,3 +19,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
+
+find_package(kissfft REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE kissfft::kissfft-float)
