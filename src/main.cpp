@@ -6,7 +6,7 @@ using namespace std;
 
 static GLFWwindow* createWindow();
 static void error_callback(int, const char*);
-static void openGLInit();
+static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO);
 static void processInput(GLFWwindow *);
 
 int main(){
@@ -14,7 +14,9 @@ int main(){
     auto w = createWindow();
 
     //  Set up openGL
-    openGLInit();
+    GLuint VBO, VAO, EBO;
+    auto shaderProgram = openGLInit();
+    glUseProgram(shaderProgram);    //  Once we implement diff shaders, call this inside main loop
 
     // Create the audio manager
     AudioManager am;
@@ -40,7 +42,7 @@ int main(){
     while (!glfwWindowShouldClose(w)) {
         processInput(w);
 
-        glClearColor(0.0f,0.0f,0.0f,0.0f);
+        glClearColor(0.0f,1.0f,0.0f,0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glfwPollEvents();
@@ -76,15 +78,69 @@ static void error_callback(int error, const char* description) {
     cerr << "GLFW Error [" << error << "]: " << description << "\n";
 }
 
-void openGLInit(){
+// Shaders
+static const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;\nvoid main()\n{\ngl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n}\0";
+static const char* fragmentShaderSource = "#version 330 core\nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n}\0";
+
+GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         cerr << "Failed to load openGL func pointers with glad\n";
         std::abort();
     }
-    cout << "Vendor:   " << reinterpret_cast<const char*>(glGetString(GL_VENDOR)) << "\n";
-    cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
-    cout << "Version:  " << glGetString(GL_VERSION) << "\n";
+    cout << "OpenGL Info\n\n";
+    cout << "Vendor:   \t" << glGetString(GL_VENDOR) << "\n";
+    cout << "Renderer: \t" << glGetString(GL_RENDERER) << "\n";
+    cout << "Version:  \t" << glGetString(GL_VERSION) << "\n";
     glfwSwapInterval(1); // Enable vsync
+
+    //  Set up shaders
+    int success;
+    auto shaderInit = [&success](const char* source, GLuint& name, GLenum type) {
+        name = glCreateShader(type);
+        glShaderSource(name, 1, &source, NULL);
+        glCompileShader(name);
+        glGetShaderiv(name, GL_COMPILE_STATUS, &success);
+
+        if (!success) {
+            GLint len = 0; glGetShaderiv(name, GL_INFO_LOG_LENGTH, &len);
+            std::string log(len, '\0');
+            glGetShaderInfoLog(name, len, nullptr, log.data());
+            std::cerr << "Shader compile failed (" << name << "):\n" << log << "\n";
+            std::abort();
+        }
+    };
+
+    GLuint vertexShader;
+    shaderInit(vertexShaderSource, vertexShader, GL_VERTEX_SHADER);
+    GLuint fragmentShader;
+    shaderInit(fragmentShaderSource, fragmentShader, GL_FRAGMENT_SHADER);
+
+    GLuint shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        cerr << "Failed to link shaders\n";
+        std::abort();
+    }
+
+    glUseProgram(shaderProgram);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    //  Tell gl how to interpret vertex data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //  Set up buffers 
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    return shaderProgram;
 }
 
 void processInput(GLFWwindow* window) {
