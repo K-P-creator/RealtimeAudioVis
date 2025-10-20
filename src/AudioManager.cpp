@@ -16,6 +16,9 @@ AudioManager::AudioManager()
 	// Contains high for failure, low for success
 	HRESULT hr;
 
+	hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	THROW_ON_ERROR(hr, "Unable to initialize COM library in AudioManager()");
+
 	// Create instance of COM object in pEnumerator
 	hr = CoCreateInstance(
 		CLSID_MMDeviceEnumerator, NULL,
