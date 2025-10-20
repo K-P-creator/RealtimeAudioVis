@@ -22,6 +22,10 @@ The goal of this project is to create a cool, customizable audio visualization t
 
 I have plans to create a more user friendly expierience and I may add a settings menu as well as other additional display modes. I think some different approaches to graphing would be cool, such as a circular graph and maybe some special effects like a video background. 
 
+### Branches
+
+There is currently an openGL branch where I am working on migrating to openGL rendering rather than using SFML. It is still a work in progress.
+
 ## Usage
 
 After executing the .exe, use
@@ -67,6 +71,7 @@ Heres a short demo of some color modes and the double sym smoothed and the curve
 
 
 https://github.com/user-attachments/assets/17080c58-95d2-49f5-8764-724c7a3d2338
+
 
 
 
