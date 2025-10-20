@@ -160,39 +160,21 @@ AudioManager& AudioManager::operator=(AudioManager&& other) noexcept
 }
 
 
-sf::Color AudioManager::GetColor(size_t i, float mag) const {
+std::vector<float> AudioManager::GetColor(size_t i, float mag) const {
 	uint8_t coly = static_cast<uint8_t>((static_cast<unsigned int>((mag / WINDOW_HEIGHT) * mag) + 1) % 255);
 	uint8_t colx = static_cast<uint8_t>((i + 1) % 255);
 
 	switch (this->color) {
 	case 'r':  // Red
-		return sf::Color({ 255, 0, 0 });
+		return std::vector<float>({ 255, 0, 0 });
 	case 'g':  // Green
-		return sf::Color({ 0, 255, 0 });
+		return std::vector<float>({ 0, 255, 0 });
 	case 'b':  // Blue
-		return sf::Color({ 0, 0, 255 });
+		return std::vector<float>({ 0, 0, 255 });
 
-		// Color fades based on i and mag
-	case '1':
-		return sf::Color({ uint8_t(255 - colx), 0, colx });          // Red - Blue
-	case '2':
-		return sf::Color({ uint8_t(255 - coly), 0, coly });          // Red - Blue (vertical)
-	case '3':
-		return sf::Color({ uint8_t(255 - coly), colx, 0 });          // Orange - Green
-	case '4':
-		return sf::Color({ colx, uint8_t(255 - coly), coly });       // Color swirl
-	case '5':
-		return sf::Color({ colx, coly, 255 });                       // Blue-glow spectrum
-	case '6':
-		return sf::Color({ uint8_t(colx ^ coly), colx, coly });      // XOR mash
-	case '7':
-		return sf::Color({ uint8_t(uint8_t(i * mag) % 255), coly, colx });  // Wild fire (based on intensity)
-	case '8':
-		return sf::Color({ uint8_t(sin(i * 0.1) * 127 + 128),        // Sin wave red
-						   uint8_t(cos(i * 0.05) * 127 + 128),       // Cos wave green
-						   uint8_t(sin(i * 0.2 + mag) * 127 + 128) });// Sin-cos dynamic purple
+		
 	default:
-		return sf::Color({ 255, 255, 255 }); // White fallback
+		return std::vector<float>({ 255, 255, 255 }); // White fallback
 	}
 }
 
@@ -304,197 +286,7 @@ void AudioManager::GetAudio()
 
 
 // Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(sf::RenderWindow * w) const
+void AudioManager::RenderAudio(GLFWwindow * w) const
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT/4;
-	
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / barCount);
-
-	for (size_t i = 0; i < barCount; i++) {
-		if (magnitudes[i] <= 0.1) continue;
-		r.setPosition({ barWidth * static_cast<float>(i), WINDOW_HEIGHT - magnitudes[i] });
-		r.setSize({ barWidth, magnitudes[i]});
-		r.setFillColor(GetColor(i,magnitudes[i]));
-		w->draw(r);
-	}
-
-	return;
-}
-
-
-// Symmetric version
-void AudioManager::RenderAudioSymmetric(sf::RenderWindow * w) const {
-	if (!w) throw (std::invalid_argument("No render window found in RenderAudioSymmetric()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT / 4;
-
-	// Bars are twice as skinny because there's 2x more
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / (barCount * 2));
-	float mid = WINDOW_WIDTH / 2;
-
-	// Draw starting at the center, and draw two rectangles mirror for every bar
-	for (size_t i = 0; i < barCount; i++) {
-		if (magnitudes[i] <= 0.1) continue;
-		float barHeight = WINDOW_HEIGHT - magnitudes[i];
-		float barOffset = static_cast<float>(i) * barWidth;
-
-		r.setPosition({ mid + barOffset, barHeight });
-		r.setSize({ barWidth, magnitudes[i] });
-		r.setFillColor(GetColor(i, magnitudes[i]));
-		w->draw(r);
-
-		// Draw mirrored bar now
-		r.setPosition({ mid - barOffset, barHeight });
-		w->draw(r);
-	}
-}
-
-
-// Render functionn with two way symmetry
-void AudioManager::RenderAudioFourWaySym(sf::RenderWindow* w) const {
-	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioFourWaySym()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT / 4;
-
-	// Bars are twice as skinny because there's 2x more
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / (barCount * 2));
-	float mid = WINDOW_WIDTH / 2;
-
-	// Draw starting at the center, and draw two rectangles mirror for every bar
-	for (size_t i = 0; i < barCount; i++) {
-		if (magnitudes[i] <= 0.1) continue;
-		float halfMag = magnitudes[i] / 2;
-		float barHeight = WINDOW_HEIGHT/2 - halfMag;
-		float barOffset = static_cast<float>(i) * barWidth;
-
-		r.setPosition({ mid + barOffset, barHeight });
-		r.setSize({ barWidth, magnitudes[i]});
-		r.setFillColor(GetColor(i, magnitudes[i]));
-		w->draw(r);
-
-		// Draw mirrored bar now
-		r.setPosition({ mid - barOffset, barHeight });
-		w->draw(r);
-	}
-}
-
-
-// Render functionn with two way symmetry with smoothing
-void AudioManager::RenderAudioWithSmoothing(sf::RenderWindow* w) {
-	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioFourWaySym()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT / 4;
-
-	// Bars are twice as skinny because there's 2x more
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / (barCount * 2));
-	float mid = WINDOW_WIDTH / 2;
-
-	bool first = false;
-	if (prevMagnitudes.empty()) 
-	{
-		prevMagnitudes.resize(FFT_COUNT / 2);
-		first = true;
-	}
-
-	// Draw starting at the center, and draw two rectangles mirror for every bar
-	for (size_t i = 0; i < barCount; i++) {
-		// Skip this iteration if negative or zero magnitude
-		if (magnitudes[i] <= 0.0)
-		{
-			prevMagnitudes[i] = 0;
-			continue;
-		}
-
-		// Height of the bar after applying smoothing
-		// If height is increasing, dont smooth. This increases responsiveness A LOT
-		float smoothedHeight;
-		if (!first) 
-		{
-			smoothedHeight = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
-			if (smoothedHeight < magnitudes[i]) smoothedHeight = magnitudes[i];
-		}
-		else smoothedHeight = magnitudes[i];
-
-		// X offset for bars
-		float barOffset = static_cast<float>(i) * barWidth;
-
-		// Upper left vertex at (middle +- offset, (W_HEIGHT - BAR_HEIGHT) / 2
-		r.setPosition({ mid + barOffset, (WINDOW_HEIGHT - smoothedHeight) / 2 });
-		r.setSize({ barWidth, smoothedHeight });
-		r.setFillColor(GetColor(i, smoothedHeight));
-		w->draw(r);
-
-		// Draw mirrored bar now
-		r.setPosition({ mid - barOffset, (WINDOW_HEIGHT - smoothedHeight) / 2 });
-		w->draw(r);
-
-		// Save the smoothed hieght as the prev height
-		prevMagnitudes[i] = smoothedHeight;
-	}
-
-	magnitudes.clear();
-	magnitudes.resize(FFT_COUNT / 2);
-}
-
-
-// Render as a curve (with smoothing)
-void AudioManager::RenderAudioCurve(sf::RenderWindow* w) {
-	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioCurve()"));
-
-	sf::Curve c({ 0, 0 }, { 0, 0 }, { 0, 0 });
-	c.setThickness(5.0f);
-	c.setVertexCount(50);
-
-	auto widthScale = static_cast<float>(WINDOW_WIDTH / (magnitudes.size() / 3));
-
-	bool first = false;
-	if (prevMagnitudes.empty())
-	{
-		prevMagnitudes.resize(FFT_COUNT / 2);
-		first = true;
-	}
-
-	std::vector <float> smoothedHeights;
-	smoothedHeights.resize(magnitudes.size());
-	for (unsigned int i = 0; i < magnitudes.size(); i++) {
-		if (magnitudes[i] <= 0.0f) {
-			smoothedHeights[i] = 0.0f;
-			continue;
-		}
-		// Height of the bar after applying smoothing
-		// If height is increasing, dont smooth. This increases responsiveness A LOT
-		if (!first)
-		{
-			smoothedHeights[i] = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
-			if (smoothedHeights[i] <= magnitudes[i]) smoothedHeights[i] = magnitudes[i];
-		}
-		else smoothedHeights[i] = magnitudes[i];
-	}
-
-	for (unsigned int i = 0; i < magnitudes.size(); i += 2) {
-		
-		// Draw the top half
-		c.setPoints({ static_cast<float>(i * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i]/2 }, 
-			{ static_cast<float>((i + 2) * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i + 2]/2 },
-			{ static_cast<float>((i + 1) * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i + 1]/2 });
-		c.setColor(GetColor(i, smoothedHeights[i + 1]));
-		w->draw(c);
-
-		// Draw the bottom half
-		c.setPoints({ static_cast<float>(i * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i] / 2 },
-			{ static_cast<float>((i + 2) * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i + 2] / 2 },
-			{ static_cast<float>((i + 1) * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i + 1] / 2 });
-		w->draw(c);
-
-		// Save the smoothed hieght as the prev height
-		prevMagnitudes[i] = smoothedHeights[i];
-	}
-
-
 }

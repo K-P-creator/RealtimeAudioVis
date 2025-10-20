@@ -1,16 +1,11 @@
-cmake_minimum_required(VERSION 3.28)
-project(AudioVis)
+# GLFW requires version 3.16 of CMake or higher
+cmake_minimum_required(VERSION 3.16...3.28 FATAL_ERROR)
+project("AudioVis" LANGUAGES C CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-# Create kissfft as its own static library
-add_library(kissfft STATIC external/kissfft/kiss_fft.c)
-target_include_directories(kissfft PUBLIC external/kissfft)
-
-add_executable(AudioVis src/main.cpp src/AudioManager.cpp src/Curve.cpp src/PolyCurve.cpp)
-
-target_compile_features(AudioVis PRIVATE cxx_std_20)
+add_executable(${PROJECT_NAME} src/main.cpp src/AudioManager.cpp)
 
 # glad/glfw3/imgui/OpenGL dependencies
 find_package(glad CONFIG REQUIRED)

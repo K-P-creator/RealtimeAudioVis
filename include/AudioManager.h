@@ -1,7 +1,8 @@
-// SFML includes
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
+// glad/opengl/glfw includes
+#define GLFW_INCLUDE_NONE
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 //audio headrers
 #include <windows.h>
@@ -10,7 +11,7 @@
 
 // KissFFT for audio transforms
 extern "C" {
-#include "kiss_fft.h"
+#include "../external/kissfft/kiss_fft.h"
 }
 
 // STL includes
@@ -22,8 +23,6 @@ extern "C" {
 #include <memory>
 
 #include "Globals.h"
-#include "Curve.hpp"
-#include "PolyCurve.hpp"
 
 
 
@@ -38,23 +37,8 @@ class AudioManager {
 
 
 		void GetAudio();
-		void RenderAudio(sf::RenderWindow *) const;
+		void RenderAudio(GLFWwindow *) const;
 		void SetColorFunction();
-
-		// Renders the graph in the center and mirrors on the left side
-		void RenderAudioSymmetric(sf::RenderWindow *) const; 
-
-		// This will perform a two way mirror with lines of symmetry at y = W_HEIGHT/2 and x = W_WIDTH/2
-		void RenderAudioFourWaySym(sf::RenderWindow*) const;
-
-		// two way mirror with smoothing
-		void RenderAudioWithSmoothing(sf::RenderWindow* w);
-
-		// Render as a curve (with smoothing)
-		void RenderAudioCurve(sf::RenderWindow* w);
-
-		// Render as a cubic curve (with smoothing)
-		void RenderAudioCubicCurve(sf::RenderWindow* w);
 
 		// No copys allowed
 		AudioManager(const AudioManager&) = delete;
@@ -98,6 +82,6 @@ class AudioManager {
 
 		// Takes in the index of the bar and the hieght and generates a color based off what
 		// Color generation mechanism the user selects
-		sf::Color GetColor(size_t, float) const;
+		std::vector<float> GetColor(size_t, float) const;
 		char color; // Data for color function
 };
