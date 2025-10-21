@@ -3,15 +3,14 @@
 
 AudioManager::AudioManager()
 {
-	// Color selection to default
-	this->color = '\0';
-
 	// Kiss FFT setup
 	cfg = kiss_fft_alloc(FFT_COUNT, 0, nullptr, nullptr);
 
 	// Allocate mem for the visualization data
 	magnitudes.resize(FFT_COUNT/2);
 	prevMagnitudes.reserve(FFT_COUNT / 2);
+	colors.resize(BAR_COUNT, {0.0f, 0.0f, 0.0f, 0.0f});
+	verts.resize(BAR_COUNT * 4 * 3, -1.0f);
 
 	// Contains high for failure, low for success
 	HRESULT hr;
@@ -112,7 +111,8 @@ AudioManager::AudioManager(AudioManager&& other) noexcept
 	cfg = other.cfg;
 	magnitudes = std::move(other.magnitudes);
 	accumulator = std::move(other.accumulator);
-	color = other.color;
+	colors = std::move(other.colors);
+	verts = std::move(other.verts);
 
 
 	// Invalidate the source
@@ -160,43 +160,6 @@ AudioManager& AudioManager::operator=(AudioManager&& other) noexcept
 	other.cfg = nullptr;
 
 	return *this;
-}
-
-
-std::vector<float> AudioManager::GetColor(size_t i, float mag) const {
-	uint8_t coly = static_cast<uint8_t>((static_cast<unsigned int>((mag / WINDOW_HEIGHT) * mag) + 1) % 255);
-	uint8_t colx = static_cast<uint8_t>((i + 1) % 255);
-
-	switch (this->color) {
-	case 'r':  // Red
-		return std::vector<float>({ 255, 0, 0 });
-	case 'g':  // Green
-		return std::vector<float>({ 0, 255, 0 });
-	case 'b':  // Blue
-		return std::vector<float>({ 0, 0, 255 });
-
-		
-	default:
-		return std::vector<float>({ 255, 255, 255 }); // White fallback
-	}
-}
-
-
-void AudioManager::SetColorFunction() {
-	switch (color) {
-	case 'r': color = 'g'; break;
-	case 'g': color = 'b'; break;
-	case 'b': color = '1'; break;
-	case '1': color = '2'; break;
-	case '2': color = '3'; break;
-	case '3': color = '4'; break;
-	case '4': color = '5'; break;
-	case '5': color = '6'; break;
-	case '6': color = '7'; break;
-	case '7': color = '8'; break;
-	case '8': color = 'r'; break;
-	default: color = 'r'; break;
-	}
 }
 
 
@@ -289,7 +252,43 @@ void AudioManager::GetAudio()
 
 
 // Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(GLFWwindow * w) const
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
+
+	this->genVerts();
+	this->genColors();
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_STATIC_DRAW);
+}
+
+
+void AudioManager::genVerts() {
+	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
+	float horizScale = float(pixPerBar) / float(WINDOW_WIDTH);
+	float vertScale = 1.0f / 1080.0f;
+
+	for (unsigned int i = 0; i < BAR_COUNT; i++) {
+		float x1 = horizScale * i - 1;
+		float x2 = x1 + horizScale;
+		float y = this->magnitudes[i] * vertScale;
+		int indx = i * 4 * 3;
+
+		//Order of triangles will be 1,2,3 and 2,3,4
+		//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
+		verts[indx] = x1;
+		verts[indx + 3] = x2;
+		verts[indx + 6] = x1;
+		verts[indx + 7] = y;
+		verts[indx + 9] = x2;
+		verts[indx + 10] = y;
+	}
+}
+
+
+void AudioManager::genColors() {
+	for (unsigned int i = 0; i < BAR_COUNT; i ++) {
+		colors[i] = { 1.0,0,0,1.0 };
+	}
 }

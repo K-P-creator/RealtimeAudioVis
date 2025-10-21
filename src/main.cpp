@@ -15,7 +15,7 @@ int main(){
 
     //  Set up openGL
     GLuint VBO, VAO, EBO;
-    auto shaderProgram = openGLInit();
+    auto shaderProgram = openGLInit(VBO, VAO, EBO);
     glUseProgram(shaderProgram);    //  Once we implement diff shaders, call this inside main loop
 
     // Create the audio manager
@@ -32,18 +32,28 @@ int main(){
         trys++;
         if (trys >= RETRY_COUNT) {
             cerr << "Reinitialize failed " << trys << " times... Exiting...\n";
-            return EXIT_FAILURE;
+            std::abort();
         }
     }
-    trys = 0;
 
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
         processInput(w);
 
+        int width, height;
+        glfwGetFramebufferSize(w, &width, &height);
+        glViewport(0, 0, width, height);
+
         glClearColor(0.0f,1.0f,0.0f,0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        am.GetAudio();
+        am.RenderAudio(w, VBO);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, BAR_COUNT * 6, GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
 
         glfwPollEvents();
         glfwSwapBuffers(w);
@@ -78,7 +88,6 @@ static void error_callback(int error, const char* description) {
     cerr << "GLFW Error [" << error << "]: " << description << "\n";
 }
 
-// Shaders
 static const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;\nvoid main()\n{\ngl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n}\0";
 static const char* fragmentShaderSource = "#version 330 core\nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n}\0";
 
@@ -131,14 +140,37 @@ GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    //  Tell gl how to interpret vertex data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
 
     //  Set up buffers 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, BAR_COUNT * sizeof(float) * 4 * 3, nullptr, GL_DYNAMIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    //  Set up the EBO
+    std::vector<uint32_t> indices;
+    indices.reserve(BAR_COUNT * 6);
+    for (uint32_t i = 0; i < BAR_COUNT; ++i) {
+        uint32_t base = i * 4;
+        // two triangles: 0-1-2, 1-2-3 (CCW)
+        indices.push_back(base + 0);
+        indices.push_back(base + 1);
+        indices.push_back(base + 2);
+
+        indices.push_back(base + 1);
+        indices.push_back(base + 2);
+        indices.push_back(base + 3);
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
     return shaderProgram;
 }

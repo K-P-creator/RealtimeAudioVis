@@ -16,6 +16,7 @@ extern "C" {
 
 // STL includes
 #include <vector>
+#include <array>
 #include <stdexcept>
 #include <iostream>
 #include <cmath>
@@ -24,20 +25,16 @@ extern "C" {
 
 #include "Globals.h"
 
-
-
 #define THROW_ON_ERROR(hres, x)  \
               if (FAILED(hres)) { throw std::runtime_error(x); }
 
 class AudioManager {
 	public:
-		// Inits all the windows audio stuff and begins storing the output audio in buffer
 		AudioManager();
 		~AudioManager() noexcept;
 
-
 		void GetAudio();
-		void RenderAudio(GLFWwindow *) const;
+		void RenderAudio(GLFWwindow *, GLuint &VBO);
 		void SetColorFunction();
 
 		// No copys allowed
@@ -80,8 +77,12 @@ class AudioManager {
 		// Accumulator for audio data
 		std::vector<float> accumulator;
 
-		// Takes in the index of the bar and the hieght and generates a color based off what
-		// Color generation mechanism the user selects
-		std::vector<float> GetColor(size_t, float) const;
-		char color; // Data for color function
+		//	Get the vertex data for bars
+		// sequential vector of vertecies to draw
+		void genVerts();
+		std::vector <float> verts;
+
+		//	Get the color data for bars
+		void genColors();
+		std::vector<std::array<float,4>> colors;
 };
