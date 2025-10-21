@@ -266,14 +266,18 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO)
 
 void AudioManager::genVerts() {
 	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
-	float horizScale = float(pixPerBar) / float(WINDOW_WIDTH);
+	float horizScale = 2 * float(pixPerBar) / float(WINDOW_WIDTH);
 	float vertScale = 1.0f / 1080.0f;
 
 	for (unsigned int i = 0; i < BAR_COUNT; i++) {
-		float x1 = horizScale * i - 1;
-		float x2 = x1 + horizScale;
-		float y = this->magnitudes[i] * vertScale;
 		int indx = i * 4 * 3;
+		if (magnitudes[i] <= 0) {
+			verts[indx] = verts[indx + 3] = verts[indx + 6] = verts[indx + 7] = verts[indx + 9] = verts[indx + 10] = 0.0f;
+			continue;
+		}
+		float x1 = horizScale * i - 1.0f;
+		float x2 = x1 + horizScale;
+		float y = this->magnitudes[i] * vertScale - 1.0f;
 
 		//Order of triangles will be 1,2,3 and 2,3,4
 		//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
