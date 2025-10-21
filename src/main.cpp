@@ -1,6 +1,11 @@
 //Main loop for visualization
 #include <iostream>
+
 #include "../include/AudioManager.h"
+
+#include "ImGui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 using namespace std;
 
@@ -36,6 +41,15 @@ int main(){
         }
     }
 
+    ////////// Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ////////// Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(w, true);
+    ImGui_ImplOpenGL3_Init((char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+    ////////// Setup Dear ImGui style
+    ImGui::StyleColorsDark();
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
