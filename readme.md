@@ -4,7 +4,9 @@
 
 ### OpenGL branch
 
-This branch will switch to using openGL, glfw and imgui rather than SFML
+This branch will switch to using openGL, glfw and imgui rather than SFML.
+
+I also have switched to using vcpkg for all deps, including kiss_fft.
 
 ### Build instructions
 
