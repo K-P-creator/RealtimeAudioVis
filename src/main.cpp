@@ -47,7 +47,7 @@ int main(){
     ImGuiIO& io = ImGui::GetIO();
     ////////// Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(w, true);
-    ImGui_ImplOpenGL3_Init((char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+    ImGui_ImplOpenGL3_Init("#version 330");
     ////////// Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
@@ -62,6 +62,11 @@ int main(){
         glClearColor(0.0f,1.0f,0.0f,0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // feed inputs to dear imgui, start new frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         am.GetAudio();
         am.RenderAudio(w, VBO);
 
@@ -69,9 +74,26 @@ int main(){
         glDrawElements(GL_TRIANGLES, BAR_COUNT * 6, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
 
+        // render GUI
+        ImGui::Begin("Demo window");
+        ImGui::Button("Enable/Disable Smoothing");
+        ImGui::Button("Background Color");
+        ImGui::Button("Bar Color");
+        ImGui::Button("Display Mode");
+        ImGui::End();
+
+        // Render dear imgui into screen
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
         glfwPollEvents();
         glfwSwapBuffers(w);
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
 
     return EXIT_SUCCESS;
