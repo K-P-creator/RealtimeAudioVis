@@ -252,12 +252,12 @@ void AudioManager::GetAudio()
 
 
 // Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO)
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, const GLfloat c[4])
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
 	this->genVerts();
-	this->genColors();
+	this->genColors(c);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_STATIC_DRAW);
@@ -291,8 +291,8 @@ void AudioManager::genVerts() {
 }
 
 
-void AudioManager::genColors() {
+void AudioManager::genColors(const GLfloat c[4]) {
 	for (unsigned int i = 0; i < BAR_COUNT; i ++) {
-		colors[i] = { 1.0,0,0,1.0 };
+		colors[i] = { c[0], c[1], c[2], c[3] };
 	}
 }

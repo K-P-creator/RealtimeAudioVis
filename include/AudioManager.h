@@ -34,7 +34,7 @@ class AudioManager {
 		~AudioManager() noexcept;
 
 		void GetAudio();
-		void RenderAudio(GLFWwindow *, GLuint &VBO);
+		void RenderAudio(GLFWwindow *, GLuint &VBO, const GLfloat c[4]);
 		void SetColorFunction();
 
 		// No copys allowed
@@ -83,6 +83,6 @@ class AudioManager {
 		std::vector <float> verts;
 
 		//	Get the color data for bars
-		void genColors();
+		void genColors(const GLfloat c[4]);
 		std::vector<std::array<float,4>> colors;
 };

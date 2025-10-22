@@ -14,6 +14,9 @@ static void error_callback(int, const char*);
 static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO);
 static void processInput(GLFWwindow *);
 
+static GLfloat barColor[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
+static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 int main(){
     // Create window
     auto w = createWindow();
@@ -59,7 +62,7 @@ int main(){
         glfwGetFramebufferSize(w, &width, &height);
         glViewport(0, 0, width, height);
 
-        glClearColor(0.0f,1.0f,0.0f,0.0f);
+        glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // feed inputs to dear imgui, start new frame
@@ -68,17 +71,16 @@ int main(){
         ImGui::NewFrame();
 
         am.GetAudio();
-        am.RenderAudio(w, VBO);
+        am.RenderAudio(w, VBO, barColor);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, BAR_COUNT * 6, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
 
         // render GUI
-        ImGui::Begin("Demo window");
-        ImGui::Button("Enable/Disable Smoothing");
-        ImGui::Button("Background Color");
-        ImGui::Button("Bar Color");
+        ImGui::Begin("AudioViz Menu");
+        ImGui::ColorEdit3("Background Color", backgroundColor);
+        ImGui::ColorEdit3("Bar Color", barColor);
         ImGui::Button("Display Mode");
         ImGui::End();
 
