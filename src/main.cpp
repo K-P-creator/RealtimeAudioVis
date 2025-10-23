@@ -17,7 +17,7 @@ static void processInput(GLFWwindow *);
 static GLfloat barColor[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
 static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-int main(){
+int main() {
     // Create window
     auto w = createWindow();
 
@@ -54,6 +54,11 @@ int main(){
     ////////// Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
+    bool smooth = false;
+    bool display = false;
+    const char* modes[] = { "Default", "Symmetric", "Double Symetric" };
+    const char* currentMode = modes[0];
+
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
         processInput(w);
@@ -81,7 +86,20 @@ int main(){
         ImGui::Begin("AudioViz Menu");
         ImGui::ColorEdit3("Background Color", backgroundColor);
         ImGui::ColorEdit3("Bar Color", barColor);
-        ImGui::Button("Display Mode");
+        
+        if (ImGui::BeginCombo("Mode", currentMode)) {
+            for (int i = 0; i < IM_ARRAYSIZE(modes); i++) {
+                bool is_selected = (currentMode == modes[i]); 
+                if (ImGui::Selectable(modes[i], is_selected))
+                    currentMode = modes[i];
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+
+            ImGui::EndCombo();
+        }
+
+        ImGui::Checkbox("Smoothing", &smooth);
         ImGui::End();
 
         // Render dear imgui into screen

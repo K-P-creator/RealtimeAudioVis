@@ -85,4 +85,6 @@ class AudioManager {
 		//	Get the color data for bars
 		void genColors(const GLfloat c[4]);
 		std::vector<std::array<float,4>> colors;
+
+		//	Smooth magnitude values
 };
