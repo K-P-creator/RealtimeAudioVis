@@ -20,4 +20,4 @@ constexpr int FFT_COUNT = 480;
 #define SMOOTHING_COEF 0.9f // Must be between zero and one
 
 // bool smoothing, uint displayModeIndex, float[3] baseColorBars, float barHeightScaling, int windowHeight, int windowWidth
-#define DEFAULT_SETTINGS false, 0, {1.0f, 0.0f, 0.0f}, 0.8f, 1080, 1920
+#define DEFAULT_SETTINGS true, 0, {1.0f, 0.0f, 0.0f}, 1.0f, 1080, 1920

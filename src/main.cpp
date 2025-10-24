@@ -1,5 +1,7 @@
 //Main loop for visualization
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include "../include/AudioManager.h"
 
@@ -13,6 +15,7 @@ static GLFWwindow* createWindow();
 static void error_callback(int, const char*);
 static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO);
 static void processInput(GLFWwindow *);
+static string fileToString(const char *);
 
 static GLfloat barColor[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
 static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -96,7 +99,7 @@ int main() {
             ImGui::EndCombo();
         }
 
-        ImGui::SliderFloat("Bar Height", &am.settings.barHeightScale, 0.0f, 1.0f);
+        ImGui::SliderFloat("Bar Height", &am.settings.barHeightScale, 0.0f, 2.0f);
 
         ImGui::Checkbox("Smoothing", &am.settings.smoothing);
         ImGui::End();
@@ -143,9 +146,6 @@ static void error_callback(int error, const char* description) {
     cerr << "GLFW Error [" << error << "]: " << description << "\n";
 }
 
-static const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;\nvoid main()\n{\ngl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n}\0";
-static const char* fragmentShaderSource = "#version 330 core\nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n}\0";
-
 GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         cerr << "Failed to load openGL func pointers with glad\n";
@@ -175,9 +175,9 @@ GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
     };
 
     GLuint vertexShader;
-    shaderInit(vertexShaderSource, vertexShader, GL_VERTEX_SHADER);
+    shaderInit(fileToString("../shaders/basic.vert").data(), vertexShader, GL_VERTEX_SHADER);
     GLuint fragmentShader;
-    shaderInit(fragmentShaderSource, fragmentShader, GL_FRAGMENT_SHADER);
+    shaderInit(fileToString("../shaders/basic.frag").data(), fragmentShader, GL_FRAGMENT_SHADER);
 
     GLuint shaderProgram;
     shaderProgram = glCreateProgram();
@@ -233,4 +233,15 @@ GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+static string fileToString(const char* path) {
+    ifstream file;
+    file.open(path);
+
+    if (!file) throw invalid_argument(string("Unable to open file: ") + path);
+
+    ostringstream ss;
+    ss << file.rdbuf();
+    return ss.str();
 }
