@@ -261,10 +261,10 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &TBO)
 	this->genColors();
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_DYNAMIC_DRAW);
 
 	glBindBuffer(GL_TEXTURE_BUFFER, TBO);
-	glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * colors.size(), colors.data(), GL_STATIC_DRAW);
+	glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * colors.size(), colors.data(), GL_DYNAMIC_DRAW);
 }
 
 

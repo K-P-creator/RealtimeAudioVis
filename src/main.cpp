@@ -17,7 +17,7 @@ static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO, GLuint &TBO);
 static void processInput(GLFWwindow *);
 static string fileToString(const char *);
 
-static GLfloat barColor[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
+static GLfloat barColor[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
 static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 
@@ -60,6 +60,7 @@ int main() {
 
     const char* modes[] = { "Default", "Symmetric", "Double Symetric" };
     int SmoothingAmt = 1;
+    int colorLocation = glGetUniformLocation(shaderProgram, "BaseColor");
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
@@ -86,7 +87,9 @@ int main() {
         // render GUI
         ImGui::Begin("AudioViz Menu");
         ImGui::ColorEdit3("Background Color", backgroundColor);
-        ImGui::ColorEdit3("Bar Color", barColor);
+        if (ImGui::ColorEdit3("Bar Color", barColor)) {
+            glUniform4f(colorLocation, barColor[0], barColor[1], barColor[2], barColor[3]);
+        }
         
         if (ImGui::BeginCombo("Mode", modes[am.settings.modeIndex])) {
             for (int i = 0; i < IM_ARRAYSIZE(modes); i++) {
@@ -139,7 +142,7 @@ static GLFWwindow* createWindow(int w, int h)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(w, h, "OpenGLProject", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(w, h, "AudioVis", NULL, NULL);
     if (!window) {
         cerr << "Failed to create window\n";
         std::abort();
@@ -228,7 +231,7 @@ static GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint &TBO){
     indices.reserve(BAR_COUNT * 6);
     for (uint32_t i = 0; i < BAR_COUNT; ++i) {
         uint32_t base = i * 4;
-        // two triangles: 0-1-2, 1-2-3 (CCW)
+        // two triangles: 0-1-2, 1-2-3
         indices.push_back(base + 0);
         indices.push_back(base + 1);
         indices.push_back(base + 2);
@@ -238,7 +241,7 @@ static GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint &TBO){
         indices.push_back(base + 3);
     }
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_DYNAMIC_DRAW);
 
 
     //  Texture Buffer Object setup

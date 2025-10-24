@@ -2,7 +2,9 @@
 out vec4 FragColor;
 in vec4 fragmentColor;
 
+uniform vec4 BaseColor;
+
 void main()
 {
-    FragColor = fragmentColor;
+    FragColor = BaseColor;
 }
