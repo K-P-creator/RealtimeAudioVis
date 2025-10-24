@@ -1,10 +1,5 @@
 #pragma once
 
-// Used for SMFL window
-constexpr unsigned int WINDOW_HEIGHT = 1080;
-constexpr unsigned int WINDOW_WIDTH = 1920;
-
-
 // Number of frequency range bars to draw
 // Not being used yet
 constexpr unsigned int BAR_COUNT = 64;

@@ -9,7 +9,7 @@ AudioManager::AudioManager()
 	// Allocate mem for the visualization data
 	magnitudes.resize(FFT_COUNT/2);
 	prevMagnitudes.reserve(FFT_COUNT / 2);
-	colors.resize(BAR_COUNT, {0.0f, 0.0f, 0.0f, 0.0f});
+	colors.resize(BAR_COUNT * 3);
 	verts.resize(BAR_COUNT * 4 * 3, -1.0f);
 
 	// Contains high for failure, low for success
@@ -243,7 +243,7 @@ void AudioManager::GetAudio()
 		for (UINT32 i = 0; i < FFT_COUNT / 2; ++i) {
 			magnitudes[i] = sqrtf(visualData[i].r * visualData[i].r + visualData[i].i * visualData[i].i);
 			magnitudes[i] = log2(magnitudes[i]);
-			magnitudes[i] *= static_cast<float>(WINDOW_HEIGHT / 10.0f);
+			magnitudes[i] *= static_cast<float>(settings.windowHeight / 10.0f);
 		}
 	}
 
@@ -252,22 +252,25 @@ void AudioManager::GetAudio()
 
 
 // Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO)
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &TBO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
 	if (this->settings.smoothing) this->genSmoothedVerts();
 	else this->genVerts();
-	this->genColors(settings.baseColor);
+	this->genColors();
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_TEXTURE_BUFFER, TBO);
+	glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * colors.size(), colors.data(), GL_STATIC_DRAW);
 }
 
 
 void AudioManager::genVerts() {
-	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
-	float horizScale = 2 * float(pixPerBar) / float(WINDOW_WIDTH);
+	unsigned int pixPerBar = (settings.windowWidth / BAR_COUNT);
+	float horizScale = 2 * float(pixPerBar) / float(settings.windowWidth);
 	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 
 	for (unsigned int i = 0; i < BAR_COUNT; i++) {
@@ -301,8 +304,8 @@ void AudioManager::genSmoothedVerts() {
 		prevMagnitudes.resize(prevMagnitudes.capacity());
 	}
 
-	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
-	float horizScale = 2 * float(pixPerBar) / float(WINDOW_WIDTH);
+	unsigned int pixPerBar = (settings.windowWidth / BAR_COUNT);
+	float horizScale = 2 * float(pixPerBar) / float(settings.windowWidth);
 	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 
 	for (size_t i = 0; i < BAR_COUNT; i++) {
@@ -345,8 +348,11 @@ void AudioManager::genSmoothedVerts() {
 }
 
 
-void AudioManager::genColors(const GLfloat c[4]) {
-	for (unsigned int i = 0; i < BAR_COUNT; i ++) {
-		colors[i] = { c[0], c[1], c[2], c[3] };
+void AudioManager::genColors() {
+	for (int i = 0; i < BAR_COUNT; i++) {
+		int indx = i * 3;
+		colors[indx] = settings.baseColor[0];
+		colors[indx + 1] = settings.baseColor[1];
+		colors[indx + 2] = settings.baseColor[2];
 	}
 }

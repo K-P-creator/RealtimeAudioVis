@@ -11,9 +11,9 @@
 
 using namespace std;
 
-static GLFWwindow* createWindow();
+static GLFWwindow* createWindow(int,int);
 static void error_callback(int, const char*);
-static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO);
+static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO, GLuint &TBO);
 static void processInput(GLFWwindow *);
 static string fileToString(const char *);
 
@@ -22,14 +22,6 @@ static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 
 int main() {
-    // Create window
-    auto w = createWindow();
-
-    //  Set up openGL
-    GLuint VBO, VAO, EBO;
-    auto shaderProgram = openGLInit(VBO, VAO, EBO);
-    glUseProgram(shaderProgram);    //  Once we implement diff shaders, call this inside main loop
-
     // Create the audio manager
     AudioManager am;
 
@@ -47,6 +39,14 @@ int main() {
             std::abort();
         }
     }
+
+    // Create window
+    auto w = createWindow(am.settings.windowWidth, am.settings.windowHeight);
+
+    //  Set up openGL
+    GLuint VBO, VAO, EBO, TBO;
+    auto shaderProgram = openGLInit(VBO, VAO, EBO, TBO);
+    glUseProgram(shaderProgram);    //  Once we implement diff shaders, call this inside main loop
 
     ////////// Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -76,7 +76,7 @@ int main() {
         ImGui::NewFrame();
 
         am.GetAudio();
-        am.RenderAudio(w, VBO);
+        am.RenderAudio(w, VBO, TBO);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, BAR_COUNT * 6, GL_UNSIGNED_INT, nullptr);
@@ -121,7 +121,7 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-static GLFWwindow* createWindow()
+static GLFWwindow* createWindow(int w, int h)
 {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
@@ -132,7 +132,7 @@ static GLFWwindow* createWindow()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLProject", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(w, h, "OpenGLProject", NULL, NULL);
     if (!window) {
         cerr << "Failed to create window\n";
         std::abort();
@@ -146,7 +146,7 @@ static void error_callback(int error, const char* description) {
     cerr << "GLFW Error [" << error << "]: " << description << "\n";
 }
 
-GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
+static GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint &TBO){
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         cerr << "Failed to load openGL func pointers with glad\n";
         std::abort();
@@ -156,6 +156,7 @@ GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
     cout << "Renderer: \t" << glGetString(GL_RENDERER) << "\n";
     cout << "Version:  \t" << glGetString(GL_VERSION) << "\n";
     glfwSwapInterval(1); // Enable vsync
+
 
     //  Set up shaders
     int success;
@@ -200,16 +201,22 @@ GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
+    glGenBuffers(1, &TBO);
 
+
+    //  Vertex Array Object 
     glBindVertexArray(VAO);
 
+
+    //  Vertex Buffer Object
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, BAR_COUNT * sizeof(float) * 4 * 3, nullptr, GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    //  Set up the EBO
+
+    //  Element Buffer Object setup
     std::vector<uint32_t> indices;
     indices.reserve(BAR_COUNT * 6);
     for (uint32_t i = 0; i < BAR_COUNT; ++i) {
@@ -223,9 +230,12 @@ GLuint openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO){
         indices.push_back(base + 2);
         indices.push_back(base + 3);
     }
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+
+    //  Texture Buffer Object setup
+    glBindBuffer(GL_TEXTURE_BUFFER, TBO);
 
     return shaderProgram;
 }
