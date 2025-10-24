@@ -32,6 +32,9 @@ struct Settings {
 	bool smoothing;
 	unsigned int modeIndex;
 	GLfloat baseColor[3];
+	float barHeightScale;
+	int windowHeight;
+	int windowWidth;
 };
 
 class AudioManager {
@@ -40,7 +43,7 @@ class AudioManager {
 		~AudioManager() noexcept;
 
 		void GetAudio();
-		void RenderAudio(GLFWwindow *, GLuint &VBO, const Settings&);
+		void RenderAudio(GLFWwindow *, GLuint &VBO);
 		void SetColorFunction();
 
 		// No copys allowed
@@ -52,6 +55,8 @@ class AudioManager {
 
 		// Move assignment
 		AudioManager& operator=(AudioManager&& other) noexcept;
+
+		Settings settings{DEFAULT_SETTINGS};
 
 	private:
 		// WASAPI interfaces

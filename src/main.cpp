@@ -55,16 +55,14 @@ int main() {
     ////////// Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    Settings settings{ false, 0, {1.0f, 0.0f, 0.0f} };
     const char* modes[] = { "Default", "Symmetric", "Double Symetric" };
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
         processInput(w);
 
-        int width, height;
-        glfwGetFramebufferSize(w, &width, &height);
-        glViewport(0, 0, width, height);
+        glfwGetFramebufferSize(w, &am.settings.windowWidth, &am.settings.windowHeight);
+        glViewport(0, 0, am.settings.windowWidth,am.settings.windowHeight);
 
         glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -75,7 +73,7 @@ int main() {
         ImGui::NewFrame();
 
         am.GetAudio();
-        am.RenderAudio(w, VBO, settings);
+        am.RenderAudio(w, VBO);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, BAR_COUNT * 6, GL_UNSIGNED_INT, nullptr);
@@ -86,11 +84,11 @@ int main() {
         ImGui::ColorEdit3("Background Color", backgroundColor);
         ImGui::ColorEdit3("Bar Color", barColor);
         
-        if (ImGui::BeginCombo("Mode", modes[settings.modeIndex])) {
+        if (ImGui::BeginCombo("Mode", modes[am.settings.modeIndex])) {
             for (int i = 0; i < IM_ARRAYSIZE(modes); i++) {
-                bool is_selected = (settings.modeIndex == i);
+                bool is_selected = (am.settings.modeIndex == i);
                 if (ImGui::Selectable(modes[i], is_selected))
-                    settings.modeIndex = i;
+                    am.settings.modeIndex = i;
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
@@ -98,7 +96,9 @@ int main() {
             ImGui::EndCombo();
         }
 
-        ImGui::Checkbox("Smoothing", &settings.smoothing);
+        ImGui::SliderFloat("Bar Height", &am.settings.barHeightScale, 0.0f, 1.0f);
+
+        ImGui::Checkbox("Smoothing", &am.settings.smoothing);
         ImGui::End();
 
         // Render dear imgui into screen

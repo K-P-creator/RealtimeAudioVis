@@ -252,11 +252,11 @@ void AudioManager::GetAudio()
 
 
 // Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, const Settings& settings)
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
-	if (settings.smoothing) this->genSmoothedVerts();
+	if (this->settings.smoothing) this->genSmoothedVerts();
 	else this->genVerts();
 	this->genColors(settings.baseColor);
 
@@ -268,7 +268,7 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, const Settings& sett
 void AudioManager::genVerts() {
 	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
 	float horizScale = 2 * float(pixPerBar) / float(WINDOW_WIDTH);
-	float vertScale = 1.0f / 1080.0f;
+	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 
 	for (unsigned int i = 0; i < BAR_COUNT; i++) {
 		int indx = i * 4 * 3;
@@ -303,7 +303,7 @@ void AudioManager::genSmoothedVerts() {
 
 	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
 	float horizScale = 2 * float(pixPerBar) / float(WINDOW_WIDTH);
-	float vertScale = 1.0f / 1080.0f;
+	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 
 	for (size_t i = 0; i < BAR_COUNT; i++) {
 		int indx = i * 4 * 3;
