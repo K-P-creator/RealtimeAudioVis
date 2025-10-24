@@ -59,6 +59,7 @@ int main() {
     ImGui::StyleColorsDark();
 
     const char* modes[] = { "Default", "Symmetric", "Double Symetric" };
+    int SmoothingAmt = 1;
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
@@ -97,6 +98,12 @@ int main() {
             }
 
             ImGui::EndCombo();
+        }
+
+        if (am.settings.smoothing) {
+            if (ImGui::SliderInt("Smoothing Amount", &SmoothingAmt, 1, 5)) {
+                am.UpdateSmoothing(SmoothingAmt);
+            }
         }
 
         ImGui::SliderFloat("Bar Height", &am.settings.barHeightScale, 0.0f, 2.0f);

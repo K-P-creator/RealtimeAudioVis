@@ -321,7 +321,7 @@ void AudioManager::genSmoothedVerts() {
 
 		float smoothedHeight;
 		if (!first){
-			smoothedHeight = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
+			smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
 			if (prevMagnitudes[i] < magnitudes[i]) 
 			{
 				smoothedHeight = magnitudes[i];
@@ -354,5 +354,16 @@ void AudioManager::genColors() {
 		colors[indx] = settings.baseColor[0];
 		colors[indx + 1] = settings.baseColor[1];
 		colors[indx + 2] = settings.baseColor[2];
+	}
+}
+
+void AudioManager::UpdateSmoothing(int val) {
+	switch (val) {
+	case 1: settings.smoothingCoef = 0.9f; break;
+	case 2: settings.smoothingCoef = 0.99f; break;
+	case 3: settings.smoothingCoef = 0.999f; break;
+	case 4: settings.smoothingCoef = 0.9999f; break;
+	case 5: settings.smoothingCoef = 0.99999f; break;
+	default: throw std::runtime_error("Invalid smoothing coef selection\n");
 	}
 }

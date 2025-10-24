@@ -35,6 +35,7 @@ struct Settings {
 	float barHeightScale;
 	int windowHeight;
 	int windowWidth;
+	float smoothingCoef;
 };
 
 class AudioManager {
@@ -45,6 +46,7 @@ class AudioManager {
 		void GetAudio();
 		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint&TBO);
 		void SetColorFunction();
+		void UpdateSmoothing(int);
 
 		// No copys allowed
 		AudioManager(const AudioManager&) = delete;
