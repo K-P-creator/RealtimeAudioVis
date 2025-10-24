@@ -17,6 +17,7 @@ static void processInput(GLFWwindow *);
 static GLfloat barColor[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
 static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+
 int main() {
     // Create window
     auto w = createWindow();
@@ -54,10 +55,8 @@ int main() {
     ////////// Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    bool smooth = false;
-    bool display = false;
+    Settings settings{ false, 0, {1.0f, 0.0f, 0.0f} };
     const char* modes[] = { "Default", "Symmetric", "Double Symetric" };
-    const char* currentMode = modes[0];
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
@@ -76,7 +75,7 @@ int main() {
         ImGui::NewFrame();
 
         am.GetAudio();
-        am.RenderAudio(w, VBO, barColor);
+        am.RenderAudio(w, VBO, settings);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, BAR_COUNT * 6, GL_UNSIGNED_INT, nullptr);
@@ -87,11 +86,11 @@ int main() {
         ImGui::ColorEdit3("Background Color", backgroundColor);
         ImGui::ColorEdit3("Bar Color", barColor);
         
-        if (ImGui::BeginCombo("Mode", currentMode)) {
+        if (ImGui::BeginCombo("Mode", modes[settings.modeIndex])) {
             for (int i = 0; i < IM_ARRAYSIZE(modes); i++) {
-                bool is_selected = (currentMode == modes[i]); 
+                bool is_selected = (settings.modeIndex == i);
                 if (ImGui::Selectable(modes[i], is_selected))
-                    currentMode = modes[i];
+                    settings.modeIndex = i;
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
@@ -99,7 +98,7 @@ int main() {
             ImGui::EndCombo();
         }
 
-        ImGui::Checkbox("Smoothing", &smooth);
+        ImGui::Checkbox("Smoothing", &settings.smoothing);
         ImGui::End();
 
         // Render dear imgui into screen

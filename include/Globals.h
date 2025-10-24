@@ -20,4 +20,4 @@ constexpr int FFT_COUNT = 480;
 
 #define REFTIMES_PER_SEC 1000000;
 
-#define SMOOTHING_COEF 0.9f // Must be between zero and one
+#define SMOOTHING_COEF 0.99999f // Must be between zero and one

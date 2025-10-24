@@ -252,12 +252,13 @@ void AudioManager::GetAudio()
 
 
 // Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, const GLfloat c[4])
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, const Settings& settings)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
-	this->genVerts();
-	this->genColors(c);
+	if (settings.smoothing) this->genSmoothedVerts();
+	else this->genVerts();
+	this->genColors(settings.baseColor);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_STATIC_DRAW);
@@ -272,7 +273,9 @@ void AudioManager::genVerts() {
 	for (unsigned int i = 0; i < BAR_COUNT; i++) {
 		int indx = i * 4 * 3;
 		if (magnitudes[i] <= 0) {
-			verts[indx] = verts[indx + 3] = verts[indx + 6] = verts[indx + 7] = verts[indx + 9] = verts[indx + 10] = 0.0f;
+			verts[indx] = verts[indx + 3] = verts[indx + 6] 
+						= verts[indx + 7] = verts[indx + 9] 
+						= verts[indx + 10] = 0.0f;
 			continue;
 		}
 		float x1 = horizScale * i - 1.0f;
@@ -287,6 +290,57 @@ void AudioManager::genVerts() {
 		verts[indx + 7] = y;
 		verts[indx + 9] = x2;
 		verts[indx + 10] = y;
+	}
+}
+
+
+void AudioManager::genSmoothedVerts() {
+	bool first = false;
+	if (prevMagnitudes.empty()) {
+		first = true;
+		prevMagnitudes.resize(prevMagnitudes.capacity());
+	}
+
+	unsigned int pixPerBar = (WINDOW_WIDTH / BAR_COUNT);
+	float horizScale = 2 * float(pixPerBar) / float(WINDOW_WIDTH);
+	float vertScale = 1.0f / 1080.0f;
+
+	for (size_t i = 0; i < BAR_COUNT; i++) {
+		int indx = i * 4 * 3;
+
+		if (magnitudes[i] <= 0.0f) {
+			prevMagnitudes[i] = 0.0f;
+			verts[indx] = verts[indx + 3] = verts[indx + 6] 
+						= verts[indx + 7] = verts[indx + 9] 
+						= verts[indx + 10] = 0.0f;
+			continue;
+		}
+
+		float smoothedHeight;
+		if (!first){
+			smoothedHeight = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
+			if (prevMagnitudes[i] < magnitudes[i]) 
+			{
+				smoothedHeight = magnitudes[i];
+			}
+		}
+		else smoothedHeight = magnitudes[i];
+
+		float x1 = horizScale * i - 1.0f;
+		float x2 = x1 + horizScale;
+		float y = smoothedHeight * vertScale - 1.0f;
+
+
+		//Order of triangles will be 1,2,3 and 2,3,4
+		//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
+		verts[indx] = x1;
+		verts[indx + 3] = x2;
+		verts[indx + 6] = x1;
+		verts[indx + 7] = y;
+		verts[indx + 9] = x2;
+		verts[indx + 10] = y;
+
+		prevMagnitudes[i] = smoothedHeight;
 	}
 }
 

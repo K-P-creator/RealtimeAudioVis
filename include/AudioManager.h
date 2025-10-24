@@ -28,13 +28,19 @@ extern "C" {
 #define THROW_ON_ERROR(hres, x)  \
               if (FAILED(hres)) { throw std::runtime_error(x); }
 
+struct Settings {
+	bool smoothing;
+	unsigned int modeIndex;
+	GLfloat baseColor[3];
+};
+
 class AudioManager {
 	public:
 		AudioManager();
 		~AudioManager() noexcept;
 
 		void GetAudio();
-		void RenderAudio(GLFWwindow *, GLuint &VBO, const GLfloat c[4]);
+		void RenderAudio(GLFWwindow *, GLuint &VBO, const Settings&);
 		void SetColorFunction();
 
 		// No copys allowed
@@ -86,5 +92,6 @@ class AudioManager {
 		void genColors(const GLfloat c[4]);
 		std::vector<std::array<float,4>> colors;
 
-		//	Smooth magnitude values
-};
+		//	Smoothed verts
+		void genSmoothedVerts();
+};		
