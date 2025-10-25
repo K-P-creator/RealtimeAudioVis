@@ -11,7 +11,8 @@
 
 using namespace std;
 
-static GLFWwindow* createWindow(int = 0,int = 0, bool = true);
+static GLFWwindow* createWindow(int,int);
+static void toggleFullscreen(GLFWwindow*, bool);
 static void error_callback(int, const char*);
 static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO, GLuint &TBO);
 static void processInput(GLFWwindow *);
@@ -41,7 +42,7 @@ int main() {
     }
 
     // Create window
-    auto w = createWindow(am.settings.windowWidth, am.settings.windowHeight, false);
+    auto w = createWindow(am.settings.windowWidth, am.settings.windowHeight);
 
     //  Set up openGL
     GLuint VBO, VAO, EBO, TBO;
@@ -89,9 +90,8 @@ int main() {
         // render GUI
         ImGui::Begin("AudioViz Menu");
         if (ImGui::Button("Toggle Fullscreen")) {
-            if (fullscreen) w = createWindow(am.settings.windowWidth, am.settings.windowHeight, false);
-            else w = createWindow();
-
+            toggleFullscreen(w, fullscreen);
+            fullscreen = !fullscreen;
         }
         ImGui::ColorEdit3("Background Color", backgroundColor);
         if (ImGui::ColorEdit3("Bar Color", barColor)) {
@@ -138,7 +138,7 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-static GLFWwindow* createWindow(int w, int h, bool fullScrn)
+static GLFWwindow* createWindow(int w, int h)
 {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
@@ -149,20 +149,9 @@ static GLFWwindow* createWindow(int w, int h, bool fullScrn)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = nullptr;
-    if (!fullScrn) 
-    {
-        assert(w > 0 && h > 0);
-        if (w) glfwDestroyWindow(window);
-        window = glfwCreateWindow(w, h, "AudioVis", NULL, NULL);
-    }
-    else 
-    {
-        if (w) glfwDestroyWindow(window);
-        const auto mon = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(mon);
-        window = glfwCreateWindow(mode->width, mode->height, "AudioVis", mon, NULL);
-    }
+    GLFWwindow* window;
+    window = glfwCreateWindow(w, h, "AudioVis", NULL, NULL);
+
 
     if (!window) {
         cerr << "Failed to create window\n";
@@ -171,6 +160,25 @@ static GLFWwindow* createWindow(int w, int h, bool fullScrn)
     glfwMakeContextCurrent(window);
 
     return window;
+}
+
+static void toggleFullscreen(GLFWwindow* window, bool fullScrn) {
+    const auto mon = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(mon);
+
+    // saved window states
+    static int x, y, hi, wi;
+
+    if (fullScrn)
+    {
+        glfwSetWindowMonitor(window, NULL, x, y, wi, hi, 0);
+    }
+    else
+    {
+        glfwGetWindowSize(window, &wi, &hi);
+        glfwGetWindowPos(window, &x, &y);
+        glfwSetWindowMonitor(window, mon, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
 }
 
 static void error_callback(int error, const char* description) {
