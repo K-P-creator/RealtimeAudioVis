@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static GLFWwindow* createWindow(int,int);
+static GLFWwindow* createWindow(int = 0,int = 0, bool = true);
 static void error_callback(int, const char*);
 static GLuint openGLInit(GLuint &VBO, GLuint &VAO, GLuint &EBO, GLuint &TBO);
 static void processInput(GLFWwindow *);
@@ -41,7 +41,7 @@ int main() {
     }
 
     // Create window
-    auto w = createWindow(am.settings.windowWidth, am.settings.windowHeight);
+    auto w = createWindow(am.settings.windowWidth, am.settings.windowHeight, false);
 
     //  Set up openGL
     GLuint VBO, VAO, EBO, TBO;
@@ -61,6 +61,8 @@ int main() {
     const char* modes[] = { "Default", "Symmetric", "Double Symetric" };
     int SmoothingAmt = 1;
     int colorLocation = glGetUniformLocation(shaderProgram, "BaseColor");
+    glUniform4f(colorLocation, barColor[0], barColor[1], barColor[2], barColor[3]);
+    bool fullscreen = false;
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
@@ -86,6 +88,11 @@ int main() {
 
         // render GUI
         ImGui::Begin("AudioViz Menu");
+        if (ImGui::Button("Toggle Fullscreen")) {
+            if (fullscreen) w = createWindow(am.settings.windowWidth, am.settings.windowHeight, false);
+            else w = createWindow();
+
+        }
         ImGui::ColorEdit3("Background Color", backgroundColor);
         if (ImGui::ColorEdit3("Bar Color", barColor)) {
             glUniform4f(colorLocation, barColor[0], barColor[1], barColor[2], barColor[3]);
@@ -103,6 +110,7 @@ int main() {
             ImGui::EndCombo();
         }
 
+        ImGui::Checkbox("Smoothing", &am.settings.smoothing);
         if (am.settings.smoothing) {
             if (ImGui::SliderInt("Smoothing Amount", &SmoothingAmt, 1, 5)) {
                 am.UpdateSmoothing(SmoothingAmt);
@@ -111,7 +119,6 @@ int main() {
 
         ImGui::SliderFloat("Bar Height", &am.settings.barHeightScale, 0.0f, 2.0f);
 
-        ImGui::Checkbox("Smoothing", &am.settings.smoothing);
         ImGui::End();
 
         // Render dear imgui into screen
@@ -131,7 +138,7 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-static GLFWwindow* createWindow(int w, int h)
+static GLFWwindow* createWindow(int w, int h, bool fullScrn)
 {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
@@ -142,7 +149,21 @@ static GLFWwindow* createWindow(int w, int h)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(w, h, "AudioVis", NULL, NULL);
+    GLFWwindow* window = nullptr;
+    if (!fullScrn) 
+    {
+        assert(w > 0 && h > 0);
+        if (w) glfwDestroyWindow(window);
+        window = glfwCreateWindow(w, h, "AudioVis", NULL, NULL);
+    }
+    else 
+    {
+        if (w) glfwDestroyWindow(window);
+        const auto mon = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(mon);
+        window = glfwCreateWindow(mode->width, mode->height, "AudioVis", mon, NULL);
+    }
+
     if (!window) {
         cerr << "Failed to create window\n";
         std::abort();
