@@ -299,39 +299,6 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 }
 
 
-void AudioManager::genVerts() {
-	unsigned int pixPerBar = float(settings.windowWidth) / float(BAR_COUNT);
-	float horizScale = 2.0f * float(pixPerBar) / float(settings.windowWidth);
-	float vertScale = (float(this->settings.barHeightScale) * 1.0f) / float(this->settings.windowHeight);
-
-	for (unsigned int i = 0; i < BAR_COUNT; i++) {
-		int indx = i * 4 * 3;
-		if (magnitudes[i] <= 0) {
-			std::fill(verts.begin() + indx, verts.begin() + indx + 12, -1.0f);
-			continue;
-		}
-		float x1 = horizScale * i - 1.0f;
-		float x2 = x1 + horizScale;
-		float y = this->magnitudes[i] * vertScale - 1.0f;
-
-		//Order of triangles will be 1,2,3 and 2,3,4
-		//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
-		verts[indx] = x1;
-		verts[indx + 1] = -1.0f;
-		verts[indx + 2] = 0.0f;
-		verts[indx + 3] = x2;
-		verts[indx + 4] = -1.0f;
-		verts[indx + 5] = 0.0f;
-		verts[indx + 6] = x1;
-		verts[indx + 7] = y;
-		verts[indx + 8] = 0.0f;
-		verts[indx + 9] = x2;
-		verts[indx + 10] = y;
-		verts[indx + 11] = 0.0f;
-	}
-}
-
-
 void AudioManager::genSmoothedVerts() {
 	bool first = false;
 	if (prevMagnitudes.empty()) {

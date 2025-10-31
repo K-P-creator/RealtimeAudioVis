@@ -102,11 +102,6 @@ class AudioManager {
 		// Accumulator for audio data
 		std::vector<float> accumulator;
 
-		//	Get the vertex data for bars
-		// sequential vector of vertecies to draw
-		void genVerts();
-		std::vector <float> verts;
-
 		//	Get the color data for bars
 		void genColors();
 		std::vector<float> colors;
