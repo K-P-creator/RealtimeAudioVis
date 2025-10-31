@@ -22,15 +22,21 @@ extern "C" {
 #include <cmath>
 #include <algorithm>
 #include <memory>
+#include <fstream>
+#include <sstream>
 
 #include "Globals.h"
 
 #define THROW_ON_ERROR(hres, x)  \
               if (FAILED(hres)) { throw std::runtime_error(x); }
 
+#define DEFAULT_M		0
+#define SYMMETRIC_M		1
+#define DOUBLE_SYM_M	2
+
 struct Settings {
 	bool smoothing;
-	unsigned int modeIndex;
+	unsigned int modeIndex; //Default = 0, Symmetric = 1; Double Symetric = 2
 	GLfloat baseColor[3];
 	float barHeightScale;
 	int windowHeight;
@@ -44,9 +50,13 @@ class AudioManager {
 		~AudioManager() noexcept;
 
 		void GetAudio();
-		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint&TBO);
+		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint&TBO, GLuint&);
 		void SetColorFunction();
 		void UpdateSmoothing(int);
+		void openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint& TBO);
+
+		GLuint getDefaultShader() { return this->defaultShaderProgram; }
+		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
 
 		// No copys allowed
 		AudioManager(const AudioManager&) = delete;
@@ -61,6 +71,8 @@ class AudioManager {
 		Settings settings{DEFAULT_SETTINGS};
 
 	private:
+		GLuint defaultShaderProgram, symmetricShaderProgram;
+
 		// WASAPI interfaces
 		IMMDeviceEnumerator* pEnumerator = NULL;
 		IMMDevice* pDevice = NULL;
@@ -101,4 +113,10 @@ class AudioManager {
 
 		//	Smoothed verts
 		void genSmoothedVerts();
+
+		//	Minimal vertices are the points at the top left of each bar
+		//	The purpose of this is to reduce the buffer size as much as possible
+		//	and to compute as much on the GPU as we can
+		void genMinVerts();
+		std::vector<float> minVerts;
 };		
