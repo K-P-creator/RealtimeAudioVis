@@ -11,7 +11,6 @@ AudioManager::AudioManager()
 	magnitudes.resize(FFT_COUNT/2);
 	prevMagnitudes.reserve(FFT_COUNT / 2);
 	colors.resize(BAR_COUNT * 3);
-	verts.resize(BAR_COUNT * 4 * 3, -1.0f);
 
 	// Contains high for failure, low for success
 	HRESULT hr;
@@ -115,7 +114,6 @@ AudioManager::AudioManager(AudioManager&& other) noexcept
 	magnitudes = std::move(other.magnitudes);
 	accumulator = std::move(other.accumulator);
 	colors = std::move(other.colors);
-	verts = std::move(other.verts);
 	defaultShaderProgram = other.defaultShaderProgram;
 	symmetricShaderProgram = other.symmetricShaderProgram;
 
@@ -300,60 +298,60 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 
 
 void AudioManager::genSmoothedVerts() {
-	bool first = false;
-	if (prevMagnitudes.empty()) {
-		first = true;
-		prevMagnitudes.resize(prevMagnitudes.capacity());
-	}
+	//bool first = false;
+	//if (prevMagnitudes.empty()) {
+	//	first = true;
+	//	prevMagnitudes.resize(prevMagnitudes.capacity());
+	//}
 
-	if (verts.size() < BAR_COUNT * 12)
-		verts.resize(BAR_COUNT * 12);
+	//if (verts.size() < BAR_COUNT * 12)
+	//	verts.resize(BAR_COUNT * 12);
 
-	unsigned int pixPerBar = float(settings.windowWidth) / float(BAR_COUNT);
-	float horizScale = 2 * float(pixPerBar) / float(settings.windowWidth);
-	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
+	//unsigned int pixPerBar = float(settings.windowWidth) / float(BAR_COUNT);
+	//float horizScale = 2 * float(pixPerBar) / float(settings.windowWidth);
+	//float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 
-	for (size_t i = 0; i < BAR_COUNT; i++) {
-		int indx = i * 4 * 3;
+	//for (size_t i = 0; i < BAR_COUNT; i++) {
+	//	int indx = i * 4 * 3;
 
-		if (magnitudes[i] <= 0.0f) {
-			prevMagnitudes[i] = 0.0f;
-			std::fill(verts.begin() + indx, verts.begin() + indx + 12, -1.0f);
-			continue;
-		}
+	//	if (magnitudes[i] <= 0.0f) {
+	//		prevMagnitudes[i] = 0.0f;
+	//		std::fill(verts.begin() + indx, verts.begin() + indx + 12, -1.0f);
+	//		continue;
+	//	}
 
-		float smoothedHeight;
-		if (!first){
-			smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
-			if (prevMagnitudes[i] < magnitudes[i]) 
-			{
-				smoothedHeight = magnitudes[i];
-			}
-		}
-		else smoothedHeight = magnitudes[i];
+	//	float smoothedHeight;
+	//	if (!first){
+	//		smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
+	//		if (prevMagnitudes[i] < magnitudes[i]) 
+	//		{
+	//			smoothedHeight = magnitudes[i];
+	//		}
+	//	}
+	//	else smoothedHeight = magnitudes[i];
 
-		float x1 = horizScale * i - 1.0f;
-		float x2 = x1 + horizScale;
-		float y = smoothedHeight * vertScale - 1.0f;
+	//	float x1 = horizScale * i - 1.0f;
+	//	float x2 = x1 + horizScale;
+	//	float y = smoothedHeight * vertScale - 1.0f;
 
 
-		//Order of triangles will be 1,2,3 and 2,3,4
-		//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
-		verts[indx] = x1;
-		verts[indx + 1] = -1.0f;
-		verts[indx + 2] = 0.0f;
-		verts[indx + 3] = x2;
-		verts[indx + 4] = -1.0f;
-		verts[indx + 5] = 0.0f;
-		verts[indx + 6] = x1;
-		verts[indx + 7] = y;
-		verts[indx + 8] = 0.0f;
-		verts[indx + 9] = x2;
-		verts[indx + 10] = y;
-		verts[indx + 11] = 0.0f;
+	//	//Order of triangles will be 1,2,3 and 2,3,4
+	//	//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
+	//	verts[indx] = x1;
+	//	verts[indx + 1] = -1.0f;
+	//	verts[indx + 2] = 0.0f;
+	//	verts[indx + 3] = x2;
+	//	verts[indx + 4] = -1.0f;
+	//	verts[indx + 5] = 0.0f;
+	//	verts[indx + 6] = x1;
+	//	verts[indx + 7] = y;
+	//	verts[indx + 8] = 0.0f;
+	//	verts[indx + 9] = x2;
+	//	verts[indx + 10] = y;
+	//	verts[indx + 11] = 0.0f;
 
-		prevMagnitudes[i] = smoothedHeight;
-	}
+	//	prevMagnitudes[i] = smoothedHeight;
+	//}
 }
 
 
