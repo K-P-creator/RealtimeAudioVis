@@ -13,4 +13,4 @@ constexpr int FFT_COUNT = 480;
 #define REFTIMES_PER_SEC 1000000;
 
 // bool smoothing, uint displayModeIndex, float[3] baseColorBars, float barHeightScaling, int windowHeight, int windowWidth, float smoothingCoef,
-#define DEFAULT_SETTINGS true, 0, {1.0f, 0.0f, 0.0f}, 1.0f, 1080, 1920, 0.9f
+#define DEFAULT_SETTINGS true, 1, {1.0f, 0.0f, 0.0f}, 1.0f, 1080, 1920, 0.9f
