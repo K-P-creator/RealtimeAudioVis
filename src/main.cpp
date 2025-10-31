@@ -41,8 +41,8 @@ int main() {
     auto w = createWindow(am.settings.windowWidth, am.settings.windowHeight);
 
     //  Set up openGL
-    GLuint VBO, VAO, EBO, TBO;
-    am.openGLInit(VBO, VAO, EBO, TBO);
+    GLuint VBO, VAO;
+    am.openGLInit(VBO, VAO);
 
     ////////// Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -60,17 +60,13 @@ int main() {
 
     glUseProgram(am.getDefaultShader());
     GLuint colorLocation1 = glGetUniformLocation(am.getDefaultShader(), "BaseColor");
-    GLuint screenSize1 = glGetUniformLocation(am.getDefaultShader(), "ScreenSize");
     glUniform4f(colorLocation1, barColor[0], barColor[1], barColor[2], barColor[3]);
-    glUniform2i(screenSize1, am.settings.windowWidth, am.settings.windowHeight);
 
 
     glUseProgram(am.getSymmetricShader());
     GLuint colorLocation2 = glGetUniformLocation(am.getSymmetricShader(), "BaseColor");
-    GLuint screenSize2 = glGetUniformLocation(am.getSymmetricShader(), "ScreenSize");
     GLuint barCountUniform = glGetUniformLocation(am.getSymmetricShader(), "BarCount");
     glUniform4f(colorLocation2, barColor[0], barColor[1], barColor[2], barColor[3]);
-    glUniform2i(screenSize2, am.settings.windowWidth, am.settings.windowHeight);
     glUniform1i(barCountUniform, BAR_COUNT);
 
 
@@ -84,14 +80,6 @@ int main() {
         glfwGetFramebufferSize(w, &am.settings.windowWidth, &am.settings.windowHeight);
         glViewport(0, 0, am.settings.windowWidth,am.settings.windowHeight);
 
-        if (first){
-            glUseProgram(am.getDefaultShader());
-            glUniform2i(screenSize1, am.settings.windowWidth, am.settings.windowHeight);
-            glUseProgram(am.getSymmetricShader());
-            glUniform2i(screenSize2, am.settings.windowWidth, am.settings.windowHeight);
-            first = false;
-        }
-
         glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -101,7 +89,7 @@ int main() {
         ImGui::NewFrame();
 
         am.GetAudio();
-        am.RenderAudio(w, VBO, TBO, VAO);
+        am.RenderAudio(w, VBO, VAO);
 
         // render GUI
         ImGui::Begin("AudioViz Menu");

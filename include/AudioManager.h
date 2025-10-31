@@ -50,10 +50,10 @@ class AudioManager {
 		~AudioManager() noexcept;
 
 		void GetAudio();
-		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint&TBO, GLuint&);
+		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint &VAO);
 		void SetColorFunction();
 		void UpdateSmoothing(int);
-		void openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint& TBO);
+		void openGLInit(GLuint& VBO, GLuint& VAO);
 
 		GLuint getDefaultShader() { return this->defaultShaderProgram; }
 		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }

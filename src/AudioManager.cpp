@@ -256,60 +256,46 @@ void AudioManager::GetAudio()
 }
 
 
-void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &TBO, GLuint &VAO)
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
+	this->genMinVerts();
+	glBindVertexArray(VAO);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * minVerts.size(), minVerts.data(), GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,                  // attribute index (must match your shader's layout(location = 0))
+		2,                  // number of components per vertex attribute
+		GL_FLOAT,           // type
+		GL_TRUE,           // normalized?
+		2 * sizeof(float),  // stride (distance between consecutive vertices)
+		(void*)0            // offset in the buffer
+	);
+
+
+
 	switch (settings.modeIndex) {
 	case DEFAULT_M:
-		/*if (this->settings.smoothing) this->genSmoothedVerts();
-		else this->genVerts();
-
-		this->genColors();
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_DYNAMIC_DRAW);
-
-		glBindBuffer(GL_TEXTURE_BUFFER, TBO);
-		glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * colors.size(), colors.data(), GL_DYNAMIC_DRAW);*/
-
+		
+		glUseProgram(defaultShaderProgram);
 		break;
 
 	case SYMMETRIC_M:
-		this->genMinVerts();
-		glBindVertexArray(VAO);
-
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * minVerts.size(), minVerts.data(), GL_DYNAMIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(
-			0,                  // attribute index (must match your shader's layout(location = 0))
-			3,                  // number of components per vertex attribute
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			3 * sizeof(float),  // stride (distance between consecutive vertices)
-			(void*)0            // offset in the buffer
-		);
-
-
-		glUseProgram(symmetricShaderProgram);
-		glDrawArrays(GL_POINTS, 0, minVerts.size() / 3);
-
-		glBindVertexArray(0);
 		
+		glUseProgram(symmetricShaderProgram);
 		break;
 
 	case DOUBLE_SYM_M:
 		break;
 	}
 
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(float) * verts.size(), verts.data(), GL_DYNAMIC_DRAW);
-
-	//glBindBuffer(GL_TEXTURE_BUFFER, TBO);
-	//glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * colors.size(), colors.data(), GL_DYNAMIC_DRAW);
+	glDrawArrays(GL_POINTS, 0, minVerts.size() / 2);
+	glBindVertexArray(0);
 }
 
 
@@ -411,15 +397,14 @@ void AudioManager::genMinVerts() {
 	float horizScale = 2.0f * float(pixPerBar) / float(settings.windowWidth);
 	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 	
-	if (first) minVerts.resize(BAR_COUNT * 3);
+	if (first) minVerts.resize(BAR_COUNT * 2);
 
 	for (int i = 0; i < BAR_COUNT; i ++) {
-		minVerts[i * 3] = i * horizScale - 1.0f;	//	x
-		if (magnitudes[i] <= 0.01f)
-			minVerts[i * 3 + 1] = 0.01f;		// y == 0
+		minVerts[i * 2] = i * horizScale - 1.0f;	//	x
+		if (magnitudes[i] <= 0.01f)			// y
+			minVerts[i * 2 + 1] = 0.01f;	
 		else
-			minVerts[i * 3 + 1] = magnitudes[i] * vertScale; //	y
-		minVerts[i * 3 + 2] = 0.0f;	//	z
+			minVerts[i * 2 + 1] = magnitudes[i] * vertScale; 
 	}
 }
 
@@ -446,7 +431,7 @@ void AudioManager::UpdateSmoothing(int val) {
 }
 
 
-void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint& TBO) {
+void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cerr << "Failed to load openGL func pointers with glad\n";
 		std::abort();
@@ -483,12 +468,16 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint& TBO
 	shaderInit(fileToString("../shaders/default.vert").data(), vertexShader, GL_VERTEX_SHADER);
 	GLuint fragmentShader;
 	shaderInit(fileToString("../shaders/default.frag").data(), fragmentShader, GL_FRAGMENT_SHADER);
-	GLuint geomShader;
-	shaderInit(fileToString("../shaders/symmetric.geom").data(), geomShader, GL_GEOMETRY_SHADER);
+	GLuint symGeomShader;
+	shaderInit(fileToString("../shaders/symmetric.geom").data(), symGeomShader, GL_GEOMETRY_SHADER);
+	GLuint defGeomShader;
+	shaderInit(fileToString("../shaders/default.geom").data(), defGeomShader, GL_GEOMETRY_SHADER);
+
 
 
 	glAttachShader(defaultShaderProgram, vertexShader);
 	glAttachShader(defaultShaderProgram, fragmentShader);
+	glAttachShader(defaultShaderProgram, defGeomShader);
 	glLinkProgram(defaultShaderProgram);
 
 	glGetProgramiv(defaultShaderProgram, GL_LINK_STATUS, &success);
@@ -500,7 +489,7 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint& TBO
 
 	glAttachShader(symmetricShaderProgram, vertexShader);
 	glAttachShader(symmetricShaderProgram, fragmentShader);
-	glAttachShader(symmetricShaderProgram, geomShader);
+	glAttachShader(symmetricShaderProgram, symGeomShader);
 	glLinkProgram(symmetricShaderProgram);
 
 	glGetProgramiv(symmetricShaderProgram, GL_LINK_STATUS, &success);
@@ -510,50 +499,19 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO, GLuint& EBO, GLuint& TBO
 	}
 
 
+	glValidateProgram(defaultShaderProgram);
+	glValidateProgram(symmetricShaderProgram);
+
+
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	glDeleteShader(geomShader);
+	glDeleteShader(symGeomShader);
+	glDeleteShader(defGeomShader);
 
 
 	//  Set up buffers 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	glGenBuffers(1, &TBO);
-
-
-	//  Vertex Array Object 
-	glBindVertexArray(VAO);
-
-
-	//  Vertex Buffer Object
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, BAR_COUNT * sizeof(float) * 4 * 3, nullptr, GL_DYNAMIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-
-	//  Element Buffer Object setup
-	std::vector<uint32_t> indices;
-	indices.reserve(BAR_COUNT * 6);
-	for (uint32_t i = 0; i < BAR_COUNT; ++i) {
-		uint32_t base = i * 4;
-		// two triangles: 0-1-2, 1-2-3
-		indices.push_back(base + 0);
-		indices.push_back(base + 1);
-		indices.push_back(base + 2);
-
-		indices.push_back(base + 1);
-		indices.push_back(base + 2);
-		indices.push_back(base + 3);
-	}
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_DYNAMIC_DRAW);
-
-
-	//  Texture Buffer Object setup
-	glBindBuffer(GL_TEXTURE_BUFFER, TBO);
 }
 
 
