@@ -2,17 +2,15 @@
 
 ## Info
 
-### OpenGL branch
-
-This branch will switch to using openGL, glfw and imgui rather than SFML.
-
-I also have switched to using vcpkg for all deps, including kiss_fft.
-
 Visable audio frequencies range from ~ 1Hz = 7kHz
 
 NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
 
-The openGL version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
+### Versions
+
+There is a version using SFML. That version currently has more features with per bar coloring and double symmetric mode. 
+
+The new version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
 
 ### Design
 
@@ -45,3 +43,4 @@ build with `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/b
 substituting your local vcpks path and possibly your target triplet.
 
 Then open the .sln in build and f5.
+
