@@ -10,6 +10,8 @@ I also have switched to using vcpkg for all deps, including kiss_fft.
 
 Visable audio frequencies range from ~ 1Hz = 7kHz
 
+NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
+
 The openGL version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
 
 ### Design
@@ -18,13 +20,17 @@ I try to do as much stuff possible on the GPU side here. The basic flow of the m
 
 Capture Audio with CPU and format it (smoothing on/off)
 
-Upload sample to GPU with one point per bar to draw
+Upload sample to GPU with one 2D point per bar to draw
 
 Vertex shader places vertices 1-1 with points and fills in z/w coordinates
 
 Geometric shader places the other 3 vertices per bar, this shader varies based off display mode and takes a uniform bar count for calculations
 
 Fragment shader takes a uniform color and draws bars
+
+I will eventually use GPU for smoothing calculations. This would be done in the vertex shader.
+
+I will also add per bar colors. This will be done in the fragment shader.
 
 ### Build instructions
 
