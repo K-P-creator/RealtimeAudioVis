@@ -58,7 +58,9 @@ class AudioManager {
 
 		GLuint getColorLocation1(){ return this->colorLocation1; }
 		GLuint getColorLocation2(){ return this->colorLocation2; }
-		GLuint getBarCountUniform(){ return this->barCountUniform; }
+		GLuint getBarCountUniform1(){ return this->barCountUniform1; }
+		GLuint getBarCountUniform2(){ return this->barCountUniform2; }
+
 
 		GLuint getDefaultShader() { return this->defaultShaderProgram; }
 		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
@@ -123,5 +125,6 @@ class AudioManager {
 		// Uniform locations for openGL
 		GLuint colorLocation1;
 		GLuint colorLocation2;
-		GLuint barCountUniform;
+		GLuint barCountUniform1;
+		GLuint barCountUniform2;
 };		

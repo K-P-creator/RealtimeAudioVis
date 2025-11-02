@@ -8,11 +8,11 @@ uniform int BarCount;
 
 void build_bar(vec4 position)
 {    //TL, BL, TR, BR
-    gl_Position = position;    //  top left
+    gl_Position = vec4(position.x, position.y - 1.0f, position.z, position.w);    //  top left
     EmitVertex();   
     gl_Position = vec4(position.x, -1.0f, position.z, position.w);    //  bottom left
     EmitVertex();
-    gl_Position = vec4(position.x + 1.0f/float(BarCount), position.y, position.z, position.w);    //  top right
+    gl_Position = vec4(position.x + 1.0f/float(BarCount), position.y - 1.0f, position.z, position.w);    //  top right
     EmitVertex();
     gl_Position = vec4(position.x + 1.0f/float(BarCount), -1.0f, position.z, position.w );    //  bottom right
     EmitVertex();

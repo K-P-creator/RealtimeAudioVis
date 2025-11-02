@@ -68,7 +68,7 @@ AudioManager::AudioManager()
 	THROW_ON_ERROR(hr, "Unable to start audio client in AudioManager()");
 
 	defaultShaderProgram = symmetricShaderProgram = 0;
-	barCountUniform = colorLocation1 = colorLocation2 = 0;
+	barCountUniform1 = barCountUniform2 = colorLocation1 = colorLocation2 = 0;
 }
 
 
@@ -117,7 +117,8 @@ AudioManager::AudioManager(AudioManager&& other) noexcept
 	colors = std::move(other.colors);
 	defaultShaderProgram = other.defaultShaderProgram;
 	symmetricShaderProgram = other.symmetricShaderProgram;
-	barCountUniform = other.barCountUniform;
+	barCountUniform1 = other.barCountUniform1;
+	barCountUniform2 = other.barCountUniform2;
 	colorLocation1 = other.colorLocation1;
 	colorLocation2 = other.colorLocation2;
 
@@ -289,6 +290,7 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 
 			glUseProgram(defaultShaderProgram);
 			glUniform4f(colorLocation1, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+			glUniform1i(barCountUniform2, BAR_COUNT);
 			prevModeIndx = settings.modeIndex;
 			break;
 
@@ -296,7 +298,7 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 
 			glUseProgram(symmetricShaderProgram);
 			glUniform4f(colorLocation2, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
-			glUniform1i(barCountUniform, BAR_COUNT);
+			glUniform1i(barCountUniform2, BAR_COUNT);
 			prevModeIndx = settings.modeIndex;
 			break;
 
@@ -490,14 +492,16 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	// init uniforms
 	glUseProgram(getDefaultShader());
 	colorLocation1 = glGetUniformLocation(getDefaultShader(), "BaseColor");
+	barCountUniform1 = glGetUniformLocation(getDefaultShader(), "BarCount");
 	glUniform4f(colorLocation1, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+	glUniform1i(barCountUniform2, BAR_COUNT);
 
 
 	glUseProgram(getSymmetricShader());
 	colorLocation2 = glGetUniformLocation(getSymmetricShader(), "BaseColor");
-	barCountUniform = glGetUniformLocation(getSymmetricShader(), "BarCount");
+	barCountUniform2 = glGetUniformLocation(getSymmetricShader(), "BarCount");
 	glUniform4f(colorLocation2, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
-	glUniform1i(barCountUniform, BAR_COUNT);
+	glUniform1i(barCountUniform2, BAR_COUNT);
 
 	//  Set up buffers 
 	glGenVertexArrays(1, &VAO);
