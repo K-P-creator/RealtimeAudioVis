@@ -12,10 +12,7 @@ static GLFWwindow* createWindow(int,int);
 static void toggleFullscreen(GLFWwindow*, bool);
 static void error_callback(int, const char*);
 static void processInput(GLFWwindow *);
-static GLuint recompileShaders();
-
-static GLfloat barColor[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
-static GLfloat backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+static GLuint recompileShaders(); //not implemented yet
 
 
 int main() {
@@ -58,18 +55,6 @@ int main() {
     int SmoothingAmt = 1;
 
 
-    glUseProgram(am.getDefaultShader());
-    GLuint colorLocation1 = glGetUniformLocation(am.getDefaultShader(), "BaseColor");
-    glUniform4f(colorLocation1, barColor[0], barColor[1], barColor[2], barColor[3]);
-
-
-    glUseProgram(am.getSymmetricShader());
-    GLuint colorLocation2 = glGetUniformLocation(am.getSymmetricShader(), "BaseColor");
-    GLuint barCountUniform = glGetUniformLocation(am.getSymmetricShader(), "BarCount");
-    glUniform4f(colorLocation2, barColor[0], barColor[1], barColor[2], barColor[3]);
-    glUniform1i(barCountUniform, BAR_COUNT);
-
-
     bool fullscreen = false;
     bool first = true;
 
@@ -80,7 +65,7 @@ int main() {
         glfwGetFramebufferSize(w, &am.settings.windowWidth, &am.settings.windowHeight);
         glViewport(0, 0, am.settings.windowWidth,am.settings.windowHeight);
 
-        glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+        glClearColor(am.settings.baseColor[0], am.settings.baseColor[1], am.settings.baseColor[2], am.settings.baseColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // feed inputs to dear imgui, start new frame
@@ -98,12 +83,12 @@ int main() {
             fullscreen = !fullscreen;
         }
 
-        ImGui::ColorEdit3("Background Color", backgroundColor);
-        if (ImGui::ColorEdit3("Bar Color", barColor)) {
+        ImGui::ColorEdit3("Background Color", am.settings.baseColor);
+        if (ImGui::ColorEdit3("Bar Color", am.settings.barColor)) {
             glUseProgram(am.getDefaultShader());
-            glUniform4f(colorLocation1, barColor[0], barColor[1], barColor[2], barColor[3]);
+            glUniform4f(am.getColorLocation1(), am.settings.barColor[0], am.settings.barColor[1], am.settings.barColor[2], am.settings.barColor[3]);
             glUseProgram(am.getSymmetricShader());
-            glUniform4f(colorLocation2, barColor[0], barColor[1], barColor[2], barColor[3]);
+            glUniform4f(am.getColorLocation2(), am.settings.barColor[0], am.settings.barColor[1], am.settings.barColor[2], am.settings.barColor[3]);
         }
         
         if (ImGui::BeginCombo("Mode", modes[am.settings.modeIndex])) {

@@ -37,7 +37,8 @@ extern "C" {
 struct Settings {
 	bool smoothing;
 	unsigned int modeIndex; //Default = 0, Symmetric = 1; Double Symetric = 2
-	GLfloat baseColor[3];
+	GLfloat baseColor[4];
+	GLfloat barColor[4];
 	float barHeightScale;
 	int windowHeight;
 	int windowWidth;
@@ -54,6 +55,10 @@ class AudioManager {
 		void SetColorFunction();
 		void UpdateSmoothing(int);
 		void openGLInit(GLuint& VBO, GLuint& VAO);
+
+		GLuint getColorLocation1(){ return this->colorLocation1; }
+		GLuint getColorLocation2(){ return this->colorLocation2; }
+		GLuint getBarCountUniform(){ return this->barCountUniform; }
 
 		GLuint getDefaultShader() { return this->defaultShaderProgram; }
 		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
@@ -114,4 +119,9 @@ class AudioManager {
 		//	and to compute as much on the GPU as we can
 		void genMinVerts();
 		std::vector<float> minVerts;
+
+		// Uniform locations for openGL
+		GLuint colorLocation1;
+		GLuint colorLocation2;
+		GLuint barCountUniform;
 };		
