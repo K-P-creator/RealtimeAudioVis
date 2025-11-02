@@ -2,7 +2,9 @@
 
 ## Info
 
-Visable audio frequencies range from ~ 1Hz = 7kHz
+Stack: openGL, GLFW, ImGui, kissFFT, vcpkg, cmake
+
+Visable audio frequencies range from ~ 1Hz - 7kHz
 
 NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
 
@@ -22,7 +24,11 @@ Capture Audio with CPU and format it (smoothing on/off)
 
 There is currently an openGL branch where I am working on migrating to openGL rendering rather than using SFML. It is still a work in progress.
 
-## Usage
+### Design
+
+The pipline flow is as follows
+
+Get audio sample, smooth it (optional) and translate to 2D vertices CPU side
 
 Vertex shader places vertices 1-1 with points and fills in z/w coordinates
 
@@ -43,4 +49,3 @@ build with `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/b
 substituting your local vcpks path and possibly your target triplet.
 
 Then open the .sln in build and f5.
-
