@@ -263,6 +263,7 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
+	if (settings.smoothing) smoothMagnitudes();
 	this->genMinVerts();
 	glBindVertexArray(VAO);
 
@@ -402,11 +403,11 @@ void AudioManager::genColors() {
 
 void AudioManager::UpdateSmoothing(int val) {
 	switch (val) {
-	case 1: settings.smoothingCoef = 0.9f; break;
-	case 2: settings.smoothingCoef = 0.99f; break;
-	case 3: settings.smoothingCoef = 0.999f; break;
-	case 4: settings.smoothingCoef = 0.9999f; break;
-	case 5: settings.smoothingCoef = 0.99999f; break;
+	case 1: settings.smoothingCoef = 0.9999f; break;
+	case 2: settings.smoothingCoef = 0.99999999f; break;
+	case 3: settings.smoothingCoef = 0.999999999999f; break;
+	case 4: settings.smoothingCoef = 0.9999999999999999999f; break;
+	case 5: settings.smoothingCoef = 0.999999999999999999999999999f; break;
 	default: throw std::runtime_error("Invalid smoothing coef selection\n");
 	}
 }
@@ -518,4 +519,18 @@ static std::string fileToString(const char* path) {
 	std::ostringstream ss;
 	ss << file.rdbuf();
 	return ss.str();
+}
+
+
+void AudioManager::smoothMagnitudes() {
+	if (prevMagnitudes.size() != magnitudes.size()) prevMagnitudes.resize(magnitudes.size());
+
+	for (int i = 0; i < magnitudes.size(); i++) {
+		float smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
+		if (prevMagnitudes[i] >= magnitudes[i]) {
+			prevMagnitudes[i] = magnitudes[i];
+			magnitudes[i] = smoothedHeight;
+		}
+		else prevMagnitudes[i] = magnitudes[i];
+	}
 }

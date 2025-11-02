@@ -1,20 +1,16 @@
-// glad/opengl/glfw includes
 #define GLFW_INCLUDE_NONE
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-//audio headrers
 #include <windows.h>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
 
-// KissFFT for audio transforms
 extern "C" {
 #include "kiss_fft.h"
 }
 
-// STL includes
 #include <vector>
 #include <array>
 #include <stdexcept>
@@ -60,32 +56,26 @@ class AudioManager {
 		GLuint getColorLocation2(){ return this->colorLocation2; }
 		GLuint getBarCountUniform1(){ return this->barCountUniform1; }
 		GLuint getBarCountUniform2(){ return this->barCountUniform2; }
-
-
 		GLuint getDefaultShader() { return this->defaultShaderProgram; }
 		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
 
-		// No copys allowed
 		AudioManager(const AudioManager&) = delete;
-		AudioManager& operator=(const AudioManager&) = delete;
+		AudioManager& operator=(const AudioManager&) = delete;	//	no copies
 
-		// Move constructor
 		AudioManager(AudioManager&& other) noexcept;
-
-		// Move assignment
 		AudioManager& operator=(AudioManager&& other) noexcept;
 
-		Settings settings{DEFAULT_SETTINGS};
+		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
 	private:
 		GLuint defaultShaderProgram, symmetricShaderProgram;
+		GLuint colorLocation1, colorLocation2, barCountUniform1, barCountUniform2;
 
 		// WASAPI interfaces
 		IMMDeviceEnumerator* pEnumerator = NULL;
 		IMMDevice* pDevice = NULL;
 		IAudioClient* pAudioClient = NULL;
 		IAudioCaptureClient* pCaptureClient = NULL;
-
 		REFERENCE_TIME hnsRequestedDuration = REFTIMES_PER_SEC;
 
 		// Global GUID's for devices
@@ -102,8 +92,6 @@ class AudioManager {
 
 		// Data for visualization
 		std::vector<float> magnitudes;
-
-		// Magnitudes for previous cycle
 		std::vector<float> prevMagnitudes;
 
 		// Accumulator for audio data
@@ -122,9 +110,7 @@ class AudioManager {
 		void genMinVerts();
 		std::vector<float> minVerts;
 
-		// Uniform locations for openGL
-		GLuint colorLocation1;
-		GLuint colorLocation2;
-		GLuint barCountUniform1;
-		GLuint barCountUniform2;
+		//	Smooths the magnitudes CPU side before they are translated into vertices
+		//	GPU side someday?
+		void smoothMagnitudes();
 };		
