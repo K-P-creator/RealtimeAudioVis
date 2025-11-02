@@ -2,25 +2,23 @@
 
 ## Info
 
-**WINDOWS ONLY**
+### OpenGL branch
 
-Relies on Windows WASAPI to sample sound info from the default audio device. 
-This way you can run the .exe and play any audio you want, including encrypted 
-downloads on your favorite music streaming app.
+This branch will switch to using openGL, glfw and imgui rather than SFML.
 
-STD = C++20
+I also have switched to using vcpkg for all deps, including kiss_fft.
 
-SFML Version 3.0.1 for graphics
+Visable audio frequencies range from ~ 1Hz = 7kHz
 
-- I created a custom sf::Curve class for drawing curves. I will add a ComplexCurve class eventually for better looking curve type graphs.
+NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
 
-kissFFT for Audio Fast Fourier Transform
+The openGL version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
 
-MSVC 2022
+### Design
 
-The goal of this project is to create a cool, customizable audio visualization tool that runs with super low latency. C++ is the perfect tool for the job. The kissFFT library I use is also super fast and written in C. The slowest part of the visualization is the drawing sequence with SFML. 
+I try to do as much stuff possible on the GPU side here. The basic flow of the main visualization pipeline is as follows:
 
-I have plans to create a more user friendly expierience and I may add a settings menu as well as other additional display modes. I think some different approaches to graphing would be cool, such as a circular graph and maybe some special effects like a video background. 
+Capture Audio with CPU and format it (smoothing on/off)
 
 ### Branches
 
@@ -28,50 +26,22 @@ There is currently an openGL branch where I am working on migrating to openGL re
 
 ## Usage
 
-After executing the .exe, use
+Vertex shader places vertices 1-1 with points and fills in z/w coordinates
 
-```esc```
+Geometric shader places the other 3 vertices per bar, this shader varies based off display mode and takes a uniform bar count for calculations
 
-to toggle fullscreen mode. Note that there is a 3s cooldown for switching window modes.
+Fragment shader takes a uniform color and draws bars
 
-Use:
+I will eventually use GPU for smoothing calculations. This would be done in the vertex shader.
 
-```M```
+I will also add per bar colors. This will be done in the fragment shader.
 
-to toggle visualization mode. Right now there is default, symmetric double symmetric, double sym with smoothing (my favorite), and curve with smoothing.
+### Build instructions
 
-Use:
+This branch uses vcpkg for dependencies
 
-```C```
+build with `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_POLICY_VERSION_MINIMUM=3.5`
 
-to toggle color modes. Theres a whole bunch of color modes and most of them scale with the x and y values for the bar graphs. Pretty cool.
+substituting your local vcpks path and possibly your target triplet.
 
-## Compilation
-
-Compiles with CMake. I use MSVC 2022 to build. 
-
-Open file with MSVC 
-
-and build
-
-```ctrl+shift+B```
-
-
-
-Then run with
-
-```F5```
-
-If you run in release mode, optimizations will be enabled and latency may be
-slightly lower.
-
-Heres a short demo of some color modes and the double sym smoothed and the curve modes.
-
-
-
-
-https://github.com/user-attachments/assets/17080c58-95d2-49f5-8764-724c7a3d2338
-
-
-
-
+Then open the .sln in build and f5.

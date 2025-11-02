@@ -1,22 +1,24 @@
-cmake_minimum_required(VERSION 3.28)
-project(AudioVis)
+# GLFW requires version 3.16 of CMake or higher
+cmake_minimum_required(VERSION 3.16...3.28 FATAL_ERROR)
+project("AudioVis" LANGUAGES C CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Fetch SFML from github
-include(FetchContent)
-FetchContent_Declare(SFML
-    GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.1
-    GIT_SHALLOW ON
-    EXCLUDE_FROM_ALL
-    SYSTEM)
-FetchContent_MakeAvailable(SFML)
+add_executable(${PROJECT_NAME} src/main.cpp src/AudioManager.cpp)
 
-# Create kissfft as its own static library
-add_library(kissfft STATIC external/kissfft/kiss_fft.c)
-target_include_directories(kissfft PUBLIC external/kissfft)
+# glad/glfw3/imgui/OpenGL/kissfft dependencies
+find_package(glad CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE glad::glad)
 
-add_executable(AudioVis src/main.cpp src/AudioManager.cpp src/Curve.cpp src/PolyCurve.cpp)
-target_compile_features(AudioVis PRIVATE cxx_std_20)
-target_link_libraries(AudioVis PRIVATE SFML::Graphics SFML::Audio kissfft)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
+
+find_package(OpenGL REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
+
+find_package(kissfft REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE kissfft::kissfft-float)

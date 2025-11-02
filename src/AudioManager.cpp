@@ -1,20 +1,22 @@
 ﻿#include "../include/AudioManager.h"
 
+static std::string fileToString(const char*);
 
 AudioManager::AudioManager()
 {
-	// Color selection to default
-	this->color = '\0';
-
 	// Kiss FFT setup
 	cfg = kiss_fft_alloc(FFT_COUNT, 0, nullptr, nullptr);
 
 	// Allocate mem for the visualization data
 	magnitudes.resize(FFT_COUNT/2);
 	prevMagnitudes.reserve(FFT_COUNT / 2);
+	colors.resize(BAR_COUNT * 3);
 
 	// Contains high for failure, low for success
 	HRESULT hr;
+
+	hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	THROW_ON_ERROR(hr, "Unable to initialize COM library in AudioManager()");
 
 	// Create instance of COM object in pEnumerator
 	hr = CoCreateInstance(
@@ -64,6 +66,9 @@ AudioManager::AudioManager()
 	// Start recording audio
 	hr = pAudioClient->Start();
 	THROW_ON_ERROR(hr, "Unable to start audio client in AudioManager()");
+
+	defaultShaderProgram = symmetricShaderProgram = 0;
+	barCountUniform1 = barCountUniform2 = colorLocation1 = colorLocation2 = 0;
 }
 
 
@@ -109,7 +114,13 @@ AudioManager::AudioManager(AudioManager&& other) noexcept
 	cfg = other.cfg;
 	magnitudes = std::move(other.magnitudes);
 	accumulator = std::move(other.accumulator);
-	color = other.color;
+	colors = std::move(other.colors);
+	defaultShaderProgram = other.defaultShaderProgram;
+	symmetricShaderProgram = other.symmetricShaderProgram;
+	barCountUniform1 = other.barCountUniform1;
+	barCountUniform2 = other.barCountUniform2;
+	colorLocation1 = other.colorLocation1;
+	colorLocation2 = other.colorLocation2;
 
 
 	// Invalidate the source
@@ -157,61 +168,6 @@ AudioManager& AudioManager::operator=(AudioManager&& other) noexcept
 	other.cfg = nullptr;
 
 	return *this;
-}
-
-
-sf::Color AudioManager::GetColor(size_t i, float mag) const {
-	uint8_t coly = static_cast<uint8_t>((static_cast<unsigned int>((mag / WINDOW_HEIGHT) * mag) + 1) % 255);
-	uint8_t colx = static_cast<uint8_t>((i + 1) % 255);
-
-	switch (this->color) {
-	case 'r':  // Red
-		return sf::Color({ 255, 0, 0 });
-	case 'g':  // Green
-		return sf::Color({ 0, 255, 0 });
-	case 'b':  // Blue
-		return sf::Color({ 0, 0, 255 });
-
-		// Color fades based on i and mag
-	case '1':
-		return sf::Color({ uint8_t(255 - colx), 0, colx });          // Red - Blue
-	case '2':
-		return sf::Color({ uint8_t(255 - coly), 0, coly });          // Red - Blue (vertical)
-	case '3':
-		return sf::Color({ uint8_t(255 - coly), colx, 0 });          // Orange - Green
-	case '4':
-		return sf::Color({ colx, uint8_t(255 - coly), coly });       // Color swirl
-	case '5':
-		return sf::Color({ colx, coly, 255 });                       // Blue-glow spectrum
-	case '6':
-		return sf::Color({ uint8_t(colx ^ coly), colx, coly });      // XOR mash
-	case '7':
-		return sf::Color({ uint8_t(uint8_t(i * mag) % 255), coly, colx });  // Wild fire (based on intensity)
-	case '8':
-		return sf::Color({ uint8_t(sin(i * 0.1) * 127 + 128),        // Sin wave red
-						   uint8_t(cos(i * 0.05) * 127 + 128),       // Cos wave green
-						   uint8_t(sin(i * 0.2 + mag) * 127 + 128) });// Sin-cos dynamic purple
-	default:
-		return sf::Color({ 255, 255, 255 }); // White fallback
-	}
-}
-
-
-void AudioManager::SetColorFunction() {
-	switch (color) {
-	case 'r': color = 'g'; break;
-	case 'g': color = 'b'; break;
-	case 'b': color = '1'; break;
-	case '1': color = '2'; break;
-	case '2': color = '3'; break;
-	case '3': color = '4'; break;
-	case '4': color = '5'; break;
-	case '5': color = '6'; break;
-	case '6': color = '7'; break;
-	case '7': color = '8'; break;
-	case '8': color = 'r'; break;
-	default: color = 'r'; break;
-	}
 }
 
 
@@ -295,7 +251,7 @@ void AudioManager::GetAudio()
 		for (UINT32 i = 0; i < FFT_COUNT / 2; ++i) {
 			magnitudes[i] = sqrtf(visualData[i].r * visualData[i].r + visualData[i].i * visualData[i].i);
 			magnitudes[i] = log2(magnitudes[i]);
-			magnitudes[i] *= static_cast<float>(WINDOW_HEIGHT / 10.0f);
+			magnitudes[i] *= static_cast<float>(settings.windowHeight / 10.0f);
 		}
 	}
 
@@ -303,198 +259,278 @@ void AudioManager::GetAudio()
 }
 
 
-// Draws the audio vector to the SFML window
-void AudioManager::RenderAudio(sf::RenderWindow * w) const
+void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT/4;
+	if (settings.smoothing) smoothMagnitudes();
+	this->genMinVerts();
+	glBindVertexArray(VAO);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * minVerts.size(), minVerts.data(), GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,                  // attribute index (must match your shader's layout(location = 0))
+		2,                  // number of components per vertex attribute
+		GL_FLOAT,           // type
+		GL_TRUE,           // normalized?
+		2 * sizeof(float),  // stride (distance between consecutive vertices)
+		(void*)0            // offset in the buffer
+	);
+
+
+	static int prevModeIndx = -1;
+
+	if (prevModeIndx != settings.modeIndex)
+	{
+		switch (settings.modeIndex) {
+		case DEFAULT_M:
+
+			glUseProgram(defaultShaderProgram);
+			glUniform4f(colorLocation1, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+			glUniform1i(barCountUniform2, BAR_COUNT);
+			prevModeIndx = settings.modeIndex;
+			break;
+
+		case SYMMETRIC_M:
+
+			glUseProgram(symmetricShaderProgram);
+			glUniform4f(colorLocation2, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+			glUniform1i(barCountUniform2, BAR_COUNT);
+			prevModeIndx = settings.modeIndex;
+			break;
+
+		case DOUBLE_SYM_M:
+			break;
+		}
+	}
+
+	glDrawArrays(GL_POINTS, 0, minVerts.size() / 2);
+	glBindVertexArray(0);
+}
+
+
+// Depricated
+//void AudioManager::genSmoothedVerts() {
+	//bool first = false;
+	//if (prevMagnitudes.empty()) {
+	//	first = true;
+	//	prevMagnitudes.resize(prevMagnitudes.capacity());
+	//}
+
+	//if (verts.size() < BAR_COUNT * 12)
+	//	verts.resize(BAR_COUNT * 12);
+
+	//unsigned int pixPerBar = float(settings.windowWidth) / float(BAR_COUNT);
+	//float horizScale = 2 * float(pixPerBar) / float(settings.windowWidth);
+	//float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
+
+	//for (size_t i = 0; i < BAR_COUNT; i++) {
+	//	int indx = i * 4 * 3;
+
+	//	if (magnitudes[i] <= 0.0f) {
+	//		prevMagnitudes[i] = 0.0f;
+	//		std::fill(verts.begin() + indx, verts.begin() + indx + 12, -1.0f);
+	//		continue;
+	//	}
+
+	//	float smoothedHeight;
+	//	if (!first){
+	//		smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
+	//		if (prevMagnitudes[i] < magnitudes[i]) 
+	//		{
+	//			smoothedHeight = magnitudes[i];
+	//		}
+	//	}
+	//	else smoothedHeight = magnitudes[i];
+
+	//	float x1 = horizScale * i - 1.0f;
+	//	float x2 = x1 + horizScale;
+	//	float y = smoothedHeight * vertScale - 1.0f;
+
+
+	//	//Order of triangles will be 1,2,3 and 2,3,4
+	//	//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
+	//	verts[indx] = x1;
+	//	verts[indx + 1] = -1.0f;
+	//	verts[indx + 2] = 0.0f;
+	//	verts[indx + 3] = x2;
+	//	verts[indx + 4] = -1.0f;
+	//	verts[indx + 5] = 0.0f;
+	//	verts[indx + 6] = x1;
+	//	verts[indx + 7] = y;
+	//	verts[indx + 8] = 0.0f;
+	//	verts[indx + 9] = x2;
+	//	verts[indx + 10] = y;
+	//	verts[indx + 11] = 0.0f;
+
+	//	prevMagnitudes[i] = smoothedHeight;
+	//}
+//}
+
+
+void AudioManager::genMinVerts() {
+	static bool first = true;
+	float pixPerBar = settings.windowWidth / float(BAR_COUNT);
+
+	float horizScale = 2.0f * float(pixPerBar) / float(settings.windowWidth);
+	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 	
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / barCount);
+	if (first) minVerts.resize(BAR_COUNT * 2);
 
-	for (size_t i = 0; i < barCount; i++) {
-		if (magnitudes[i] <= 0.1) continue;
-		r.setPosition({ barWidth * static_cast<float>(i), WINDOW_HEIGHT - magnitudes[i] });
-		r.setSize({ barWidth, magnitudes[i]});
-		r.setFillColor(GetColor(i,magnitudes[i]));
-		w->draw(r);
-	}
-
-	return;
-}
-
-
-// Symmetric version
-void AudioManager::RenderAudioSymmetric(sf::RenderWindow * w) const {
-	if (!w) throw (std::invalid_argument("No render window found in RenderAudioSymmetric()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT / 4;
-
-	// Bars are twice as skinny because there's 2x more
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / (barCount * 2));
-	float mid = WINDOW_WIDTH / 2;
-
-	// Draw starting at the center, and draw two rectangles mirror for every bar
-	for (size_t i = 0; i < barCount; i++) {
-		if (magnitudes[i] <= 0.1) continue;
-		float barHeight = WINDOW_HEIGHT - magnitudes[i];
-		float barOffset = static_cast<float>(i) * barWidth;
-
-		r.setPosition({ mid + barOffset, barHeight });
-		r.setSize({ barWidth, magnitudes[i] });
-		r.setFillColor(GetColor(i, magnitudes[i]));
-		w->draw(r);
-
-		// Draw mirrored bar now
-		r.setPosition({ mid - barOffset, barHeight });
-		w->draw(r);
+	for (int i = 0; i < BAR_COUNT; i ++) {
+		minVerts[i * 2] = i * horizScale - 1.0f;	//	x
+		if (magnitudes[i] <= 0.01f)			// y
+			minVerts[i * 2 + 1] = 0.01f;	
+		else
+			minVerts[i * 2 + 1] = magnitudes[i] * vertScale; 
 	}
 }
 
 
-// Render functionn with two way symmetry
-void AudioManager::RenderAudioFourWaySym(sf::RenderWindow* w) const {
-	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioFourWaySym()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT / 4;
-
-	// Bars are twice as skinny because there's 2x more
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / (barCount * 2));
-	float mid = WINDOW_WIDTH / 2;
-
-	// Draw starting at the center, and draw two rectangles mirror for every bar
-	for (size_t i = 0; i < barCount; i++) {
-		if (magnitudes[i] <= 0.1) continue;
-		float halfMag = magnitudes[i] / 2;
-		float barHeight = WINDOW_HEIGHT/2 - halfMag;
-		float barOffset = static_cast<float>(i) * barWidth;
-
-		r.setPosition({ mid + barOffset, barHeight });
-		r.setSize({ barWidth, magnitudes[i]});
-		r.setFillColor(GetColor(i, magnitudes[i]));
-		w->draw(r);
-
-		// Draw mirrored bar now
-		r.setPosition({ mid - barOffset, barHeight });
-		w->draw(r);
+void AudioManager::genColors() {
+	for (int i = 0; i < BAR_COUNT; i++) {
+		int indx = i * 3;
+		colors[indx] = settings.baseColor[0];
+		colors[indx + 1] = settings.baseColor[1];
+		colors[indx + 2] = settings.baseColor[2];
 	}
 }
 
 
-// Render functionn with two way symmetry with smoothing
-void AudioManager::RenderAudioWithSmoothing(sf::RenderWindow* w) {
-	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioFourWaySym()"));
-
-	sf::RectangleShape r;
-	size_t barCount = FFT_COUNT / 4;
-
-	// Bars are twice as skinny because there's 2x more
-	auto barWidth = static_cast<float>(WINDOW_WIDTH / (barCount * 2));
-	float mid = WINDOW_WIDTH / 2;
-
-	bool first = false;
-	if (prevMagnitudes.empty()) 
-	{
-		prevMagnitudes.resize(FFT_COUNT / 2);
-		first = true;
+void AudioManager::UpdateSmoothing(int val) {
+	switch (val) {
+	case 1: settings.smoothingCoef = 0.9999f; break;
+	case 2: settings.smoothingCoef = 0.99999999f; break;
+	case 3: settings.smoothingCoef = 0.999999999999f; break;
+	case 4: settings.smoothingCoef = 0.9999999999999999999f; break;
+	case 5: settings.smoothingCoef = 0.999999999999999999999999999f; break;
+	default: throw std::runtime_error("Invalid smoothing coef selection\n");
 	}
-
-	// Draw starting at the center, and draw two rectangles mirror for every bar
-	for (size_t i = 0; i < barCount; i++) {
-		// Skip this iteration if negative or zero magnitude
-		if (magnitudes[i] <= 0.0)
-		{
-			prevMagnitudes[i] = 0;
-			continue;
-		}
-
-		// Height of the bar after applying smoothing
-		// If height is increasing, dont smooth. This increases responsiveness A LOT
-		float smoothedHeight;
-		if (!first) 
-		{
-			smoothedHeight = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
-			if (smoothedHeight < magnitudes[i]) smoothedHeight = magnitudes[i];
-		}
-		else smoothedHeight = magnitudes[i];
-
-		// X offset for bars
-		float barOffset = static_cast<float>(i) * barWidth;
-
-		// Upper left vertex at (middle +- offset, (W_HEIGHT - BAR_HEIGHT) / 2
-		r.setPosition({ mid + barOffset, (WINDOW_HEIGHT - smoothedHeight) / 2 });
-		r.setSize({ barWidth, smoothedHeight });
-		r.setFillColor(GetColor(i, smoothedHeight));
-		w->draw(r);
-
-		// Draw mirrored bar now
-		r.setPosition({ mid - barOffset, (WINDOW_HEIGHT - smoothedHeight) / 2 });
-		w->draw(r);
-
-		// Save the smoothed hieght as the prev height
-		prevMagnitudes[i] = smoothedHeight;
-	}
-
-	magnitudes.clear();
-	magnitudes.resize(FFT_COUNT / 2);
 }
 
 
-// Render as a curve (with smoothing)
-void AudioManager::RenderAudioCurve(sf::RenderWindow* w) {
-	if (!w) throw (std::invalid_argument("No Render Window found in RenderAudioCurve()"));
-
-	sf::Curve c({ 0, 0 }, { 0, 0 }, { 0, 0 });
-	c.setThickness(5.0f);
-	c.setVertexCount(50);
-
-	auto widthScale = static_cast<float>(WINDOW_WIDTH / (magnitudes.size() / 3));
-
-	bool first = false;
-	if (prevMagnitudes.empty())
-	{
-		prevMagnitudes.resize(FFT_COUNT / 2);
-		first = true;
+void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		std::cerr << "Failed to load openGL func pointers with glad\n";
+		std::abort();
 	}
+	std::cout << "OpenGL Info\n\n";
+	std::cout << "Vendor:   \t" << glGetString(GL_VENDOR) << "\n";
+	std::cout << "Renderer: \t" << glGetString(GL_RENDERER) << "\n";
+	std::cout << "Version:  \t" << glGetString(GL_VERSION) << "\n";
+	glfwSwapInterval(1); // Enable vsync
 
-	std::vector <float> smoothedHeights;
-	smoothedHeights.resize(magnitudes.size());
-	for (unsigned int i = 0; i < magnitudes.size(); i++) {
-		if (magnitudes[i] <= 0.0f) {
-			smoothedHeights[i] = 0.0f;
-			continue;
+
+	//  Set up shaders
+	int success;
+	auto shaderInit = [&success](const char* source, GLuint& name, GLenum type) {
+		name = glCreateShader(type);
+		glShaderSource(name, 1, &source, NULL);
+		glCompileShader(name);
+		glGetShaderiv(name, GL_COMPILE_STATUS, &success);
+
+		if (!success) {
+			GLint len = 0; glGetShaderiv(name, GL_INFO_LOG_LENGTH, &len);
+			std::string log(len, '\0');
+			glGetShaderInfoLog(name, len, nullptr, log.data());
+			std::cerr << "Shader compile failed (" << name << "):\n" << log << "\n";
+			std::abort();
 		}
-		// Height of the bar after applying smoothing
-		// If height is increasing, dont smooth. This increases responsiveness A LOT
-		if (!first)
-		{
-			smoothedHeights[i] = SMOOTHING_COEF * prevMagnitudes[i] + (1 - SMOOTHING_COEF) * magnitudes[i];
-			if (smoothedHeights[i] <= magnitudes[i]) smoothedHeights[i] = magnitudes[i];
+		};
+
+
+	defaultShaderProgram = glCreateProgram();
+	symmetricShaderProgram = glCreateProgram();
+
+	GLuint vertexShader;
+	shaderInit(fileToString("../shaders/default.vert").data(), vertexShader, GL_VERTEX_SHADER);
+	GLuint fragmentShader;
+	shaderInit(fileToString("../shaders/default.frag").data(), fragmentShader, GL_FRAGMENT_SHADER);
+	GLuint symGeomShader;
+	shaderInit(fileToString("../shaders/symmetric.geom").data(), symGeomShader, GL_GEOMETRY_SHADER);
+	GLuint defGeomShader;
+	shaderInit(fileToString("../shaders/default.geom").data(), defGeomShader, GL_GEOMETRY_SHADER);
+
+
+
+	glAttachShader(defaultShaderProgram, vertexShader);
+	glAttachShader(defaultShaderProgram, fragmentShader);
+	glAttachShader(defaultShaderProgram, defGeomShader);
+	glLinkProgram(defaultShaderProgram);
+
+	glGetProgramiv(defaultShaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		std::cerr << "Failed to link default shaders\n";
+		std::abort();
+	}
+
+
+	glAttachShader(symmetricShaderProgram, vertexShader);
+	glAttachShader(symmetricShaderProgram, fragmentShader);
+	glAttachShader(symmetricShaderProgram, symGeomShader);
+	glLinkProgram(symmetricShaderProgram);
+
+	glGetProgramiv(symmetricShaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		std::cerr << "Failed to link symmetric shaders\n";
+		std::abort();
+	}
+
+
+	glValidateProgram(defaultShaderProgram);
+	glValidateProgram(symmetricShaderProgram);
+
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+	glDeleteShader(symGeomShader);
+	glDeleteShader(defGeomShader);
+
+	// init uniforms
+	glUseProgram(getDefaultShader());
+	colorLocation1 = glGetUniformLocation(getDefaultShader(), "BaseColor");
+	barCountUniform1 = glGetUniformLocation(getDefaultShader(), "BarCount");
+	glUniform4f(colorLocation1, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+	glUniform1i(barCountUniform2, BAR_COUNT);
+
+
+	glUseProgram(getSymmetricShader());
+	colorLocation2 = glGetUniformLocation(getSymmetricShader(), "BaseColor");
+	barCountUniform2 = glGetUniformLocation(getSymmetricShader(), "BarCount");
+	glUniform4f(colorLocation2, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+	glUniform1i(barCountUniform2, BAR_COUNT);
+
+	//  Set up buffers 
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+}
+
+
+static std::string fileToString(const char* path) {
+	std::ifstream file;
+	file.open(path);
+
+	if (!file) throw std::invalid_argument(std::string("Unable to open file: ") + path);
+
+	std::ostringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
+}
+
+
+void AudioManager::smoothMagnitudes() {
+	if (prevMagnitudes.size() != magnitudes.size()) prevMagnitudes.resize(magnitudes.size());
+
+	for (int i = 0; i < magnitudes.size(); i++) {
+		float smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
+		if (prevMagnitudes[i] >= magnitudes[i]) {
+			prevMagnitudes[i] = magnitudes[i];
+			magnitudes[i] = smoothedHeight;
 		}
-		else smoothedHeights[i] = magnitudes[i];
+		else prevMagnitudes[i] = magnitudes[i];
 	}
-
-	for (unsigned int i = 0; i < magnitudes.size(); i += 2) {
-		
-		// Draw the top half
-		c.setPoints({ static_cast<float>(i * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i]/2 }, 
-			{ static_cast<float>((i + 2) * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i + 2]/2 },
-			{ static_cast<float>((i + 1) * widthScale), WINDOW_HEIGHT/2 - smoothedHeights[i + 1]/2 });
-		c.setColor(GetColor(i, smoothedHeights[i + 1]));
-		w->draw(c);
-
-		// Draw the bottom half
-		c.setPoints({ static_cast<float>(i * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i] / 2 },
-			{ static_cast<float>((i + 2) * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i + 2] / 2 },
-			{ static_cast<float>((i + 1) * widthScale), WINDOW_HEIGHT / 2 + smoothedHeights[i + 1] / 2 });
-		w->draw(c);
-
-		// Save the smoothed hieght as the prev height
-		prevMagnitudes[i] = smoothedHeights[i];
-	}
-
-
 }
