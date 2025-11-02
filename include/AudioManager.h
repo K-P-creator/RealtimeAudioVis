@@ -106,8 +106,8 @@ class AudioManager {
 		void genColors();
 		std::vector<float> colors;
 
-		//	Smoothed verts
-		void genSmoothedVerts();
+		//	Smoothed verts - depricated
+		//void genSmoothedVerts();
 
 		//	Minimal vertices are the points at the top left of each bar
 		//	The purpose of this is to reduce the buffer size as much as possible

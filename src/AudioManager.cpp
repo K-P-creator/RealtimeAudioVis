@@ -297,7 +297,8 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 }
 
 
-void AudioManager::genSmoothedVerts() {
+// Depricated
+//void AudioManager::genSmoothedVerts() {
 	//bool first = false;
 	//if (prevMagnitudes.empty()) {
 	//	first = true;
@@ -352,7 +353,7 @@ void AudioManager::genSmoothedVerts() {
 
 	//	prevMagnitudes[i] = smoothedHeight;
 	//}
-}
+//}
 
 
 void AudioManager::genMinVerts() {

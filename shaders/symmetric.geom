@@ -13,7 +13,7 @@ void build_bar(vec4 position)
     gl_Position = vec4(position.x, -position.y, position.z, position.w);    //  bottom left
     EmitVertex();
     gl_Position = vec4(position.x + 1.0f/float(BarCount), position.y, position.z, position.w);    //  top right
-    EmitVertex();
+    EmitVertex();               // 1.0f here allows for whitespace between bars, use 2.0f for no whitespace
     gl_Position = vec4(position.x + 1.0f/float(BarCount), -position.y, position.z, position.w );    //  bottom right
     EmitVertex();
 
