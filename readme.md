@@ -20,7 +20,11 @@ I try to do as much stuff possible on the GPU side here. The basic flow of the m
 
 Capture Audio with CPU and format it (smoothing on/off)
 
-Upload sample to GPU with one 2D point per bar to draw
+### Branches
+
+There is currently an openGL branch where I am working on migrating to openGL rendering rather than using SFML. It is still a work in progress.
+
+## Usage
 
 Vertex shader places vertices 1-1 with points and fills in z/w coordinates
 
