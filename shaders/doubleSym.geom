@@ -1,8 +1,8 @@
 #version 330
 
 layout(points) in;
-layout(triangle_strip, max_verices = 4) out;
-layout(triangle_strip, max_verices = 4) out;	// Output two mirrored bars
+layout(triangle_strip, max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 4) out;	// Output two mirrored bars
 
 uniform int BarCount;
 
@@ -26,5 +26,5 @@ void build_bar(vec4 position)
 }
 
 void main(){
-	build_bar(gl_in[0].position);
+	build_bar(gl_in[0].gl_Position);
 }

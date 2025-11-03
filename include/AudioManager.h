@@ -58,6 +58,7 @@ class AudioManager {
 		GLuint getBarCountUniform2(){ return this->barCountUniform2; }
 		GLuint getDefaultShader() { return this->defaultShaderProgram; }
 		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
+		GLuint getDoubleSymmetricShader() { return this->doubleSymmetricShaderProgram; }
 
 		AudioManager(const AudioManager&) = delete;
 		AudioManager& operator=(const AudioManager&) = delete;	//	no copies
@@ -68,8 +69,8 @@ class AudioManager {
 		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
 	private:
-		GLuint defaultShaderProgram, symmetricShaderProgram;
-		GLuint colorLocation1, colorLocation2, barCountUniform1, barCountUniform2;
+		GLuint defaultShaderProgram, symmetricShaderProgram, doubleSymmetricShaderProgram;
+		GLuint colorLocation1, colorLocation2, colorLocation3, barCountUniform1, barCountUniform2, barCountUniform3;
 
 		// WASAPI interfaces
 		IMMDeviceEnumerator* pEnumerator = NULL;
