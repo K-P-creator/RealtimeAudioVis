@@ -14,12 +14,6 @@ There is a version using SFML. That version currently has more features with per
 
 The new version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
 
-### Design
-
-I try to do as much stuff possible on the GPU side here. The basic flow of the main visualization pipeline is as follows:
-
-Capture Audio with CPU and format it (smoothing on/off)
-
 ### Branches
 
 There is currently an openGL branch where I am working on migrating to openGL rendering rather than using SFML. It is still a work in progress.
@@ -49,3 +43,4 @@ build with `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/b
 substituting your local vcpks path and possibly your target triplet.
 
 Then open the .sln in build and f5.
+
