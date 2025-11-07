@@ -8,27 +8,25 @@ Visable audio frequencies range from ~ 1Hz - 7kHz
 
 NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
 
+I now support three visualization modes - Default, Symmetric, and Double Symmetric. These are all implemented by using different geometry shaders.
+
 ### Versions
 
-There is a version using SFML. That version currently has more features with per bar coloring and double symmetric mode. 
+There is a version using SFML. That version currently has more features with per bar coloring being the last feature I have yet to implement in openGL. 
 
 The new version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
 
-### Branches
-
-There is currently an openGL branch where I am working on migrating to openGL rendering rather than using SFML. It is still a work in progress.
-
 ### Design
 
-The pipline flow is as follows
+The pipline flow is as follows:
 
-Get audio sample, smooth it (optional) and translate to 2D vertices CPU side
+Get audio sample, smooth it (optional) and translate to 2D vertices CPU side.
 
-Vertex shader places vertices 1-1 with points and fills in z/w coordinates
+Vertex shader places vertices 1-1 with points and fills in z/w coordinates.
 
-Geometric shader places the other 3 vertices per bar, this shader varies based off display mode and takes a uniform bar count for calculations
+Geometric shader places the other 3 vertices per bar, this shader varies based off display mode and takes a uniform bar count for calculations. Every mode will perform some sort of transformation on the input vertices, turning them into triangle strips with 4 vertices. The double symmetric will duplicate them into two 4 vertex triangle strips. 
 
-Fragment shader takes a uniform color and draws bars
+Fragment shader takes a uniform color and draws bars.
 
 I will eventually use GPU for smoothing calculations. This would be done in the vertex shader.
 
@@ -43,4 +41,5 @@ build with `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/b
 substituting your local vcpks path and possibly your target triplet.
 
 Then open the .sln in build and f5.
+
 
