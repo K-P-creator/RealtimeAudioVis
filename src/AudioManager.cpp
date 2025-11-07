@@ -67,8 +67,8 @@ AudioManager::AudioManager()
 	hr = pAudioClient->Start();
 	THROW_ON_ERROR(hr, "Unable to start audio client in AudioManager()");
 
-	defaultShaderProgram = symmetricShaderProgram = 0;
-	barCountUniform1 = barCountUniform2 = colorLocation1 = colorLocation2 = 0;
+	defaultShaderProgram = symmetricShaderProgram = doubleSymmetricShaderProgram = 0;
+	barCountUniform1 = barCountUniform2 = barCountUniform3 = colorLocation1 = colorLocation2 = colorLocation3 = 0;
 }
 
 
@@ -117,10 +117,13 @@ AudioManager::AudioManager(AudioManager&& other) noexcept
 	colors = std::move(other.colors);
 	defaultShaderProgram = other.defaultShaderProgram;
 	symmetricShaderProgram = other.symmetricShaderProgram;
+	doubleSymmetricShaderProgram = other.doubleSymmetricShaderProgram;
 	barCountUniform1 = other.barCountUniform1;
 	barCountUniform2 = other.barCountUniform2;
+	barCountUniform3 = other.barCountUniform3;
 	colorLocation1 = other.colorLocation1;
 	colorLocation2 = other.colorLocation2;
+	colorLocation3 = other.colorLocation3;
 
 
 	// Invalidate the source
@@ -304,6 +307,11 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 			break;
 
 		case DOUBLE_SYM_M:
+
+			glUseProgram(doubleSymmetricShaderProgram);
+			glUniform4f(colorLocation3, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+			glUniform1i(barCountUniform3, BAR_COUNT);
+			prevModeIndx = settings.modeIndex;
 			break;
 		}
 	}
@@ -311,65 +319,6 @@ void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
 	glDrawArrays(GL_POINTS, 0, minVerts.size() / 2);
 	glBindVertexArray(0);
 }
-
-
-// Depricated
-//void AudioManager::genSmoothedVerts() {
-	//bool first = false;
-	//if (prevMagnitudes.empty()) {
-	//	first = true;
-	//	prevMagnitudes.resize(prevMagnitudes.capacity());
-	//}
-
-	//if (verts.size() < BAR_COUNT * 12)
-	//	verts.resize(BAR_COUNT * 12);
-
-	//unsigned int pixPerBar = float(settings.windowWidth) / float(BAR_COUNT);
-	//float horizScale = 2 * float(pixPerBar) / float(settings.windowWidth);
-	//float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
-
-	//for (size_t i = 0; i < BAR_COUNT; i++) {
-	//	int indx = i * 4 * 3;
-
-	//	if (magnitudes[i] <= 0.0f) {
-	//		prevMagnitudes[i] = 0.0f;
-	//		std::fill(verts.begin() + indx, verts.begin() + indx + 12, -1.0f);
-	//		continue;
-	//	}
-
-	//	float smoothedHeight;
-	//	if (!first){
-	//		smoothedHeight = settings.smoothingCoef * prevMagnitudes[i] + (1 - settings.smoothingCoef) * magnitudes[i];
-	//		if (prevMagnitudes[i] < magnitudes[i]) 
-	//		{
-	//			smoothedHeight = magnitudes[i];
-	//		}
-	//	}
-	//	else smoothedHeight = magnitudes[i];
-
-	//	float x1 = horizScale * i - 1.0f;
-	//	float x2 = x1 + horizScale;
-	//	float y = smoothedHeight * vertScale - 1.0f;
-
-
-	//	//Order of triangles will be 1,2,3 and 2,3,4
-	//	//	 x1,0,0 x2,0,0 x1,y,0 x2,y,0 
-	//	verts[indx] = x1;
-	//	verts[indx + 1] = -1.0f;
-	//	verts[indx + 2] = 0.0f;
-	//	verts[indx + 3] = x2;
-	//	verts[indx + 4] = -1.0f;
-	//	verts[indx + 5] = 0.0f;
-	//	verts[indx + 6] = x1;
-	//	verts[indx + 7] = y;
-	//	verts[indx + 8] = 0.0f;
-	//	verts[indx + 9] = x2;
-	//	verts[indx + 10] = y;
-	//	verts[indx + 11] = 0.0f;
-
-	//	prevMagnitudes[i] = smoothedHeight;
-	//}
-//}
 
 
 void AudioManager::genMinVerts() {
@@ -445,6 +394,7 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 
 	defaultShaderProgram = glCreateProgram();
 	symmetricShaderProgram = glCreateProgram();
+	doubleSymmetricShaderProgram = glCreateProgram();
 
 	GLuint vertexShader;
 	shaderInit(fileToString("../shaders/default.vert").data(), vertexShader, GL_VERTEX_SHADER);
@@ -454,6 +404,8 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	shaderInit(fileToString("../shaders/symmetric.geom").data(), symGeomShader, GL_GEOMETRY_SHADER);
 	GLuint defGeomShader;
 	shaderInit(fileToString("../shaders/default.geom").data(), defGeomShader, GL_GEOMETRY_SHADER);
+	GLuint dblSymGeomShader;
+	shaderInit(fileToString("../shaders/doubleSym.geom").data(), dblSymGeomShader, GL_GEOMETRY_SHADER);
 
 
 
@@ -481,21 +433,29 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	}
 
 
+	glAttachShader(doubleSymmetricShaderProgram, vertexShader);
+	glAttachShader(doubleSymmetricShaderProgram, fragmentShader);
+	glAttachShader(doubleSymmetricShaderProgram, dblSymGeomShader);
+	glLinkProgram(doubleSymmetricShaderProgram);
+
+
 	glValidateProgram(defaultShaderProgram);
 	glValidateProgram(symmetricShaderProgram);
-
+	glValidateProgram(doubleSymmetricShaderProgram);
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 	glDeleteShader(symGeomShader);
 	glDeleteShader(defGeomShader);
+	glDeleteShader(dblSymGeomShader);
+
 
 	// init uniforms
 	glUseProgram(getDefaultShader());
 	colorLocation1 = glGetUniformLocation(getDefaultShader(), "BaseColor");
 	barCountUniform1 = glGetUniformLocation(getDefaultShader(), "BarCount");
 	glUniform4f(colorLocation1, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
-	glUniform1i(barCountUniform2, BAR_COUNT);
+	glUniform1i(barCountUniform1, BAR_COUNT);
 
 
 	glUseProgram(getSymmetricShader());
@@ -503,6 +463,13 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	barCountUniform2 = glGetUniformLocation(getSymmetricShader(), "BarCount");
 	glUniform4f(colorLocation2, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
 	glUniform1i(barCountUniform2, BAR_COUNT);
+
+
+	glUseProgram(doubleSymmetricShaderProgram);
+	colorLocation3= glGetUniformLocation(getDoubleSymmetricShader(), "BaseColor");
+	barCountUniform3 = glGetUniformLocation(getDoubleSymmetricShader(), "BarCount");
+	glUniform4f(colorLocation3, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
+	glUniform1i(barCountUniform3, BAR_COUNT);
 
 	//  Set up buffers 
 	glGenVertexArrays(1, &VAO);
