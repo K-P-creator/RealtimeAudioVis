@@ -16,6 +16,8 @@ There is a version using SFML. That version currently has more features with per
 
 The new version does not have any frame limiter in place, so the smoothing will be much less noticable that the SFML version.
 
+A framerate independent smoothing method, and GPU based smoothing calculations are on the to do list here.
+
 ### Design
 
 The pipline flow is as follows:
@@ -41,5 +43,6 @@ build with `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/b
 substituting your local vcpks path and possibly your target triplet.
 
 Then open the .sln in build and f5.
+
 
 
