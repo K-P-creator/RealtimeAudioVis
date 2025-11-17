@@ -45,4 +45,11 @@ substituting your local vcpks path and possibly your target triplet.
 Then open the .sln in build and f5.
 
 
+### Demo
+
+*Note that this demo is at 2x speed to keep the file size down*
+
+https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
+
+
 
