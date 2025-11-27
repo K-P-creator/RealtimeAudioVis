@@ -335,7 +335,7 @@ void AudioManager::genMinVerts() {
 		if (magnitudes[i] <= 0.01f)			// y
 			minVerts[i * 2 + 1] = 0.01f;	
 		else
-			minVerts[i * 2 + 1] = magnitudes[i] * vertScale; 
+			minVerts[i * 2 + 1] = magnitudes[i] * vertScale + 0.01f;  // controls for min bar height  
 	}
 }
 
