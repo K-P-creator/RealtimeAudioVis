@@ -41,7 +41,8 @@ This branch uses vcpkg for dependencies
 build with 
 
 ```cmd
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake \
+-DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 ```
 
 substituting your local vcpks path and possibly your target triplet.
@@ -56,6 +57,7 @@ Then open the .sln and build/run with f5 (or the green arrow).
 *Note that this demo is at 2x speed to keep the file size down*
 
 https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
+
 
 
 
