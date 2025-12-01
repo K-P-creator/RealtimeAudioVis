@@ -34,6 +34,49 @@ I will eventually use GPU for smoothing calculations. This would be done in the 
 
 I will also add per bar colors. This will be done in the fragment shader.
 
+### Benchmarks
+
+All benchmarks were run in release mode.
+
+Here are the benchmarks from the deprecated **SFML** version:
+
+```ps
+Average per frame render time for 10,000 frames with mode default:                      0.000128855s
+Switching modes...
+Average per frame render time for 10,000 frames with mode symmetric:                    0.000184604s
+Switching modes...
+Average per frame render time for 10,000 frames with mode double symmetric:             0.000187429s
+Switching modes...
+Average per frame render time for 10,000 frames with mode double sym. with smoothing:   0.000183666s
+Switching modes...
+Average per frame render time for 10,000 frames with mode curved:                       0.0078988s
+```
+
+Note that there is a "curved" mode here, which I do not plan on implementing in the new OpenGL version.
+
+Here are the benchmarks for the **OpenGL** version (current):
+
+```ps
+Average per frame render time for 10,000 frames with mode default:                      6.81027e-06s (0.00000681s)
+Switching modes...
+Average per frame render time for 10,000 frames with mode symmetric:                    8.08056e-06s (0.00000808s)
+Switching modes...
+Average per frame render time for 10,000 frames with mode double symmetric:             1.00012e-05s (0.00001000s)
+Switching modes...
+Average per frame render time for 10,000 frames with mode double sym. with smoothing:   1.01402e-05s (0.00001014s)
+```
+
+Here are the speedups between versions for each mode:
+
+```ps
+Default Mode:       18.9x speedup
+Symmetric Mode:     22.8x speedup
+Double Sym Mode:    18.7x speedup
+DblSym Smth Mode:   18.1x speedup
+
+Average Speedup:    19.6x speedup
+```
+
 ### Build instructions
 
 This branch uses vcpkg for dependencies
