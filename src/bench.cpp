@@ -114,7 +114,7 @@ int main() {
                 cout << " symmetric";
                 am.settings.modeIndex = DOUBLE_SYM_M;
             }
-            if (am.settings.modeIndex == DOUBLE_SYM_M && !am.settings.smoothing)
+            else if (am.settings.modeIndex == DOUBLE_SYM_M && !am.settings.smoothing)
             {
                 cout << " double symmetric";
                 am.settings.smoothing = true;
