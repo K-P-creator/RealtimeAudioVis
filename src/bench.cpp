@@ -14,7 +14,6 @@ static GLFWwindow* createWindow(int, int);
 static void toggleFullscreen(GLFWwindow*, bool);
 static void error_callback(int, const char*);
 static void processInput(GLFWwindow*);
-static GLuint recompileShaders(); //not implemented yet
 
 
 int main() {
@@ -245,9 +244,3 @@ void processInput(GLFWwindow* window) {
         glfwSetWindowShouldClose(window, true);
 }
 
-
-//stubby
-GLuint recompileShaders()
-{
-    return GLuint();
-}
