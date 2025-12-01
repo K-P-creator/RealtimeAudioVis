@@ -65,6 +65,7 @@ int main() {
     std::vector<std::chrono::duration<float>> renderTimes;
     renderTimes.reserve(1000);
     int iterations = 0;
+    am.settings.smoothing = false;
 
 
     //Main Loop
@@ -83,7 +84,55 @@ int main() {
         ImGui::NewFrame();
 
         am.GetAudio();
+
+        auto st = std::chrono::high_resolution_clock::now();
         am.RenderAudio(w, VBO, VAO);
+        auto en = std::chrono::high_resolution_clock::now();
+
+        auto frameDuration = en - st;
+        //cout << "Frame Duration:\t" << frameDuration << endl;
+        if (iterations > 100 && iterations < 10100)
+            renderTimes.push_back(frameDuration);
+
+        else if (iterations > 10100) {
+            std::chrono::duration<float> sum(0);
+            for (const auto i : renderTimes) {
+                sum += i;
+            }
+            sum /= renderTimes.size();
+            cout << "Average per frame render time for 10,000 frames with mode";
+
+
+
+            if (am.settings.modeIndex == DEFAULT_M)
+            {
+                cout << " default";
+                am.settings.modeIndex = SYMMETRIC_M;
+            }
+            else if (am.settings.modeIndex == SYMMETRIC_M)
+            {
+                cout << " symmetric";
+                am.settings.modeIndex = DOUBLE_SYM_M;
+            }
+            if (am.settings.modeIndex == DOUBLE_SYM_M)
+            {
+                cout << " double symmetric";
+                am.settings.smoothing = true;
+            }
+            else if (am.settings.smoothing)
+            {
+                cout << " double sym. with smoothing";
+                cout << ":\t" << sum << endl;
+                return EXIT_SUCCESS;
+            }
+
+            cout << ":\t" << sum << endl;
+            cout << "Switching modes..." << endl;
+
+            iterations = 0;
+            renderTimes.clear();
+        }
+        iterations++;
 
         // render GUI
         ImGui::Begin("AudioViz Menu");
