@@ -41,10 +41,14 @@ struct Settings {
 	float smoothingCoef;
 };
 
+//	Tests classes
 class AudioManagerTest;
+class AudioManagerTest_ZeroMagnitudeSilence_Test;
 
 class AudioManager {
-	friend class AudioManagerTest;	//	Need private member access for tests
+	//	Need private member access for tests
+	friend class AudioManagerTest;	
+	friend class AudioManagerTest_ZeroMagnitudeSilence_Test;
 
 	public:
 		AudioManager();
