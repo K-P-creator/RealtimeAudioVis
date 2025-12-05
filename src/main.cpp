@@ -12,7 +12,6 @@ static GLFWwindow* createWindow(int,int);
 static void toggleFullscreen(GLFWwindow*, bool);
 static void error_callback(int, const char*);
 static void processInput(GLFWwindow *);
-static GLuint recompileShaders(); //not implemented yet
 
 
 int main() {
@@ -85,10 +84,26 @@ int main() {
 
         ImGui::ColorEdit3("Background Color", am.settings.baseColor);
         if (ImGui::ColorEdit3("Bar Color", am.settings.barColor)) {
+            auto state = am.settings.modeIndex;
+
             glUseProgram(am.getDefaultShader());
             glUniform4f(am.getColorLocation1(), am.settings.barColor[0], am.settings.barColor[1], am.settings.barColor[2], am.settings.barColor[3]);
             glUseProgram(am.getSymmetricShader());
             glUniform4f(am.getColorLocation2(), am.settings.barColor[0], am.settings.barColor[1], am.settings.barColor[2], am.settings.barColor[3]);
+            glUseProgram(am.getDoubleSymmetricShader());
+            glUniform4f(am.getColorLocation3(), am.settings.barColor[0], am.settings.barColor[1], am.settings.barColor[2], am.settings.barColor[3]);
+
+            switch (state) {
+            case DEFAULT_M:
+                glUseProgram(am.getDefaultShader());
+                break;
+            case SYMMETRIC_M:
+                glUseProgram(am.getSymmetricShader());
+                break;
+            case DOUBLE_SYM_M:
+                glUseProgram(am.getDoubleSymmetricShader());
+                break;
+            }
         }
         
         if (ImGui::BeginCombo("Mode", modes[am.settings.modeIndex])) {
@@ -184,9 +199,3 @@ void processInput(GLFWwindow* window) {
         glfwSetWindowShouldClose(window, true);
 }
 
-
-//stubby
-GLuint recompileShaders()
-{
-    return GLuint();
-}
