@@ -8,9 +8,12 @@ AudioManager::AudioManager()
 	cfg = kiss_fft_alloc(FFT_COUNT, 0, nullptr, nullptr);
 
 	// Allocate mem for the visualization data
-	magnitudes.resize(FFT_COUNT/2);
+	magnitudes.resize(FFT_COUNT / 2);
 	prevMagnitudes.reserve(FFT_COUNT / 2);
 	colors.resize(BAR_COUNT * 3);
+
+	audioSample.resize(FFT_COUNT);
+	visualData.resize(FFT_COUNT);
 
 	// Contains high for failure, low for success
 	HRESULT hr;
@@ -102,7 +105,7 @@ AudioManager::~AudioManager() noexcept
 }
 
 
-AudioManager::AudioManager(AudioManager&& other) noexcept 
+AudioManager::AudioManager(AudioManager&& other) noexcept
 {
 	// Move all data
 	pEnumerator = other.pEnumerator;
@@ -136,7 +139,7 @@ AudioManager::AudioManager(AudioManager&& other) noexcept
 }
 
 
-AudioManager& AudioManager::operator=(AudioManager&& other) noexcept 
+AudioManager& AudioManager::operator=(AudioManager&& other) noexcept
 {
 	if (this == &other) return *this;
 
@@ -146,7 +149,7 @@ AudioManager& AudioManager::operator=(AudioManager&& other) noexcept
 	if (pDevice) pDevice->Release();
 	if (pAudioClient) pAudioClient->Release();
 	if (pCaptureClient) pCaptureClient->Release();
-	if (pwfx) CoTaskMemFree(pwfx); 
+	if (pwfx) CoTaskMemFree(pwfx);
 	if (cfg) free(cfg);
 
 
@@ -181,8 +184,6 @@ void AudioManager::GetAudio()
 	UINT32 numFramesAvailable;
 	DWORD flags;
 	HRESULT hr;
-	std::vector<kiss_fft_cpx> audioSample(FFT_COUNT);
-	std::vector<kiss_fft_cpx> visualData(FFT_COUNT);
 	int numChannels = pwfx->nChannels;
 
 
@@ -220,7 +221,7 @@ void AudioManager::GetAudio()
 		}
 	}
 
-	if (accumulator.size() >= FFT_COUNT){
+	if (accumulator.size() >= FFT_COUNT) {
 		for (UINT32 i = 0; i < numFramesAvailable; i++) {
 			if (i < audioSample.size()) {
 				audioSample[i].r = accumulator[i];
@@ -262,7 +263,7 @@ void AudioManager::GetAudio()
 }
 
 
-void AudioManager::RenderAudio(GLFWwindow * w, GLuint &VBO, GLuint &VAO)
+void AudioManager::RenderAudio(GLFWwindow* w, GLuint& VBO, GLuint& VAO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
@@ -327,13 +328,13 @@ void AudioManager::genMinVerts() {
 
 	float horizScale = 2.0f * float(pixPerBar) / float(settings.windowWidth);
 	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
-	
+
 	if (first) minVerts.resize(BAR_COUNT * 2);
 
-	for (int i = 0; i < BAR_COUNT; i ++) {
+	for (int i = 0; i < BAR_COUNT; i++) {
 		minVerts[i * 2] = i * horizScale - 1.0f;	//	x
 		if (magnitudes[i] <= 0.01f)			// y
-			minVerts[i * 2 + 1] = 0.01f;	
+			minVerts[i * 2 + 1] = 0.01f;
 		else
 			minVerts[i * 2 + 1] = magnitudes[i] * vertScale + 0.01f;  // controls for min bar height  
 	}
@@ -465,8 +466,8 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	glUniform1i(barCountUniform2, BAR_COUNT);
 
 
-	glUseProgram(doubleSymmetricShaderProgram);
-	colorLocation3= glGetUniformLocation(getDoubleSymmetricShader(), "BaseColor");
+	glUseProgram(getDoubleSymmetricShader());
+	colorLocation3 = glGetUniformLocation(getDoubleSymmetricShader(), "BaseColor");
 	barCountUniform3 = glGetUniformLocation(getDoubleSymmetricShader(), "BarCount");
 	glUniform4f(colorLocation3, settings.barColor[0], settings.barColor[1], settings.barColor[2], settings.barColor[3]);
 	glUniform1i(barCountUniform3, BAR_COUNT);
