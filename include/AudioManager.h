@@ -45,6 +45,7 @@ class AudioManagerTest;
 
 class AudioManager {
 	friend class AudioManagerTest;	//	Need private member access for tests
+
 	public:
 		AudioManager();
 		~AudioManager() noexcept;
@@ -57,8 +58,10 @@ class AudioManager {
 
 		GLuint getColorLocation1(){ return this->colorLocation1; }
 		GLuint getColorLocation2(){ return this->colorLocation2; }
+		GLuint getColorLocation3() { return this->colorLocation3; }
 		GLuint getBarCountUniform1(){ return this->barCountUniform1; }
 		GLuint getBarCountUniform2(){ return this->barCountUniform2; }
+		GLuint getBarCountUniform3() { return this->barCountUniform3; }
 		GLuint getDefaultShader() { return this->defaultShaderProgram; }
 		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
 		GLuint getDoubleSymmetricShader() { return this->doubleSymmetricShaderProgram; }
