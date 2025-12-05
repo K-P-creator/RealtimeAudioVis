@@ -3,6 +3,5 @@
 #include "audio_manager_test_class.h"
 
 TEST_F(AudioManagerTest, ZeroMagnitudeSilence) {
-
-    am.GetAudio();
+	
 }

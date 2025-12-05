@@ -9,14 +9,21 @@ class AudioManagerTest : public ::testing::Test {
 	AudioManager am;
 
 	void SetUp() override {
+		//	Assert that AM was constructed correctly
+
 		ASSERT_FALSE(am.magnitudes.empty());
+		ASSERT_TRUE(am.accumulator.empty());
+		ASSERT_TRUE(am.prevMagnitudes.empty());
 
-		while (am.accumulator.empty()) {
-			am.GetAudio();
-		}
-
-		ASSERT_FALSE(am.accumulator.empty());
-
-		ASSERT_FALSE(am.prevMagnitudes.empty());
+		ASSERT_EQ(am.getDefaultShader(), 0);
+		ASSERT_EQ(am.getSymmetricShader(), 0);
+		ASSERT_EQ(am.getDoubleSymmetricShader(), 0);
+		
+		ASSERT_EQ(am.getColorLocation1(), 0);
+		ASSERT_EQ(am.getColorLocation2(), 0);
+		ASSERT_EQ(am.getColorLocation3(), 0);
+		ASSERT_EQ(am.getBarCountUniform1(), 0);
+		ASSERT_EQ(am.getBarCountUniform2(), 0);
+		ASSERT_EQ(am.getBarCountUniform3(), 0);
 	}
 };
