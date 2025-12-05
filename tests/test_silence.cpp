@@ -2,6 +2,8 @@
 
 #include "audio_manager_test_class.h"
 
-TEST_F(AudioManagerTest, ZeroMagnitudeSilence) {
-	
-}
+TEST_P(AudioManagerTest, ZeroMagnitudeSilence) {
+	for (auto& i : am.magnitudes) {
+
+	}
+};
