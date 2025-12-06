@@ -98,11 +98,11 @@ class AudioManager {
 		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 		//	For capture client
-		BYTE* pData;
-		UINT32 numFramesAvailable;
-		DWORD flags;
-		HRESULT hr;
-		int numChannels;
+		BYTE* pData = NULL;
+		UINT32 numFramesAvailable = 0;
+		DWORD flags = NULL;
+		HRESULT hr = NULL;
+		int numChannels = 0;
 
 		// Struct to describe the audio properties
 		WAVEFORMATEX* pwfx = NULL;
