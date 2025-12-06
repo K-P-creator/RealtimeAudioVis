@@ -2,7 +2,7 @@
 
 #include "audio_manager_test_class.h"
 
-TEST_F(AudioManagerTest, getAudioTests) {
+TEST_F(AudioManagerTest, silenceTest) {
 	//	Get a few frames of audio
 	for (int i = 0; i < 10; i ++)
 	{
