@@ -5,7 +5,6 @@
 class AudioManagerTest : public ::testing::Test {
 	protected:
 	AudioManager am;
-	FRIEND_TEST(AudioManagerTest, ZeroMagnitudeSilence);
 
 	void SetUp() override {
 		//	Assert that AM was constructed correctly

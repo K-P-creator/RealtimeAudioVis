@@ -178,14 +178,9 @@ AudioManager& AudioManager::operator=(AudioManager&& other) noexcept
 
 
 // Fills the vector with audio samples at various frequencies
-void AudioManager::GetAudio()
+bool AudioManager::getAudioSample()
 {
-	BYTE* pData;
-	UINT32 numFramesAvailable;
-	DWORD flags;
-	HRESULT hr;
-	int numChannels = pwfx->nChannels;
-
+	numChannels = pwfx->nChannels;
 
 	// Get the current audio buffer
 	hr = pCaptureClient->GetBuffer(&pData, &numFramesAvailable, &flags, NULL, NULL);
@@ -203,10 +198,16 @@ void AudioManager::GetAudio()
 	if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
 		std::fill(magnitudes.begin(), magnitudes.end(), 0.0f);
 		pCaptureClient->ReleaseBuffer(numFramesAvailable);
-		return;
+		return false;
 	}
 
+	return true;
+}
 
+
+//	Only run this if GetAudioSample returns true
+void AudioManager::vectorizeMagnitudes()
+{
 	// Copy the audio sample into a kissfft friendly vector
 	float* floatData = reinterpret_cast<float*>(pData);
 
@@ -266,6 +267,9 @@ void AudioManager::GetAudio()
 void AudioManager::RenderAudio(GLFWwindow* w, GLuint& VBO, GLuint& VAO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
+
+	if (getAudioSample())
+		vectorizeMagnitudes();
 
 	if (settings.smoothing) smoothMagnitudes();
 	this->genMinVerts();

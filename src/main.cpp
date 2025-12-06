@@ -72,7 +72,6 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        am.GetAudio();
         am.RenderAudio(w, VBO, VAO);
 
         // render GUI

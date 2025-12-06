@@ -43,18 +43,17 @@ struct Settings {
 
 //	Tests classes
 class AudioManagerTest;
-class AudioManagerTest_ZeroMagnitudeSilence_Test;
+class AudioManagerTest_getAudioTests_Test;
 
 class AudioManager {
 	//	Need private member access for tests
 	friend class AudioManagerTest;	
-	friend class AudioManagerTest_ZeroMagnitudeSilence_Test;
+	friend class AudioManagerTest_getAudioTests_Test;
 
 	public:
 		AudioManager();
 		~AudioManager() noexcept;
 
-		void GetAudio();
 		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint &VAO);
 		void SetColorFunction();
 		void UpdateSmoothing(int);
@@ -79,6 +78,9 @@ class AudioManager {
 		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
 	private:
+		bool getAudioSample();		//Returns false if the sample is empty
+		void vectorizeMagnitudes();
+
 		GLuint defaultShaderProgram, symmetricShaderProgram, doubleSymmetricShaderProgram;
 		GLuint colorLocation1, colorLocation2, colorLocation3, barCountUniform1, barCountUniform2, barCountUniform3;
 
@@ -95,11 +97,20 @@ class AudioManager {
 		const IID IID_IAudioClient = __uuidof(IAudioClient);
 		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
+		//	For capture client
+		BYTE* pData;
+		UINT32 numFramesAvailable;
+		DWORD flags;
+		HRESULT hr;
+		int numChannels;
+
 		// Struct to describe the audio properties
 		WAVEFORMATEX* pwfx = NULL;
 
 		// Kiss FFT
 		kiss_fft_cfg cfg = nullptr;
+		std::vector<kiss_fft_cpx> audioSample;
+		std::vector<kiss_fft_cpx> visualData;
 
 		// Data for visualization
 		std::vector<float> magnitudes;
