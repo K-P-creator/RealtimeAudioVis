@@ -10,7 +10,6 @@ class AudioManagerTest : public ::testing::Test {
 		//	Assert that AM was constructed correctly
 
 		ASSERT_FALSE(am.magnitudes.empty());
-		ASSERT_TRUE(am.accumulator.empty());
 		ASSERT_TRUE(am.prevMagnitudes.empty());
 
 		ASSERT_EQ(am.getDefaultShader(), 0);

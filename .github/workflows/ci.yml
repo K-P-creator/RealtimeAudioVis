@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Install dependencies
+        uses: microsoft/vcpkg-action@v8
+        with:
+          cache: true
+
+
+      - name: Configure CMake
+        run: >
+          cmake -B build -S .
+          -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-windows
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+
+      - name: Build
+        run: |
+          cmake --build build --config ${{ matrix.build_type }}
+
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C ${{ matrix.build_type }} --output-on-failure

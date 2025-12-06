@@ -5,6 +5,8 @@ project("AudioVis" LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(CTest)
+
 add_executable(${PROJECT_NAME} src/main.cpp src/AudioManager.cpp)
 add_executable("Benchmarks" src/bench.cpp src/AudioManager.cpp)
 
@@ -39,3 +41,7 @@ target_link_libraries("Tests" PRIVATE kissfft::kissfft-float)
 
 find_package(gtest REQUIRED)
 target_link_libraries("Tests" PRIVATE GTest::gtest GTest::gtest_main)
+
+if (BUILD_TESTING)
+    add_test(NAME AudioVisTests COMMAND Tests)
+endif()
