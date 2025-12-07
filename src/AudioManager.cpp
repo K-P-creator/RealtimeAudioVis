@@ -35,7 +35,8 @@ AudioManager::AudioManager()
 	if ((((HRESULT)(hr)) < 0)) {
 		std::cerr << "GetDefaultAudioEndpoint failed, hr = 0x"
 			<< std::hex << hr << std::dec << "\n";
-		hasValidAudioDevice = false;
+		validAudioDevice = false;
+		return;
 	}
 
 
