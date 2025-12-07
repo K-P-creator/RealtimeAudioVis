@@ -101,7 +101,7 @@ https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
 
 ### Tests
 
-The testing suite for AudioVis uses the Google Test framework. There is a limited number of tests at the moment, but more are planned. There is a test executable available to run in the build directory after building. I'm still working on configuring CI with github actions.  
+The testing suite for AudioVis uses the Google Test framework. There is a test executable available to run in the build directory after building.  
 
 
 ### CI
