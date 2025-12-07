@@ -101,7 +101,7 @@ https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
 
 ### Tests
 
-The testing suite for AudioVis is still in development. I am using GoogleTest (gtest) for the test framework. Right now we test for proper construction of the AudioManager, and for expected output of 0 magnitudes given an input of a silent audio sample. 
+The testing suite for AudioVis uses the Google Test framework. There is a limited number of tests at the moment, but more are planned. There is a test executable available to run in the build directory after building. I'm still working on configuring CI with github actions.  
 
 
 
