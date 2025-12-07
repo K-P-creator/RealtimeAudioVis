@@ -18,13 +18,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
-      - name: Install vcpkg
-        uses: lukka/run-vcpkg@v11
-
-      - name: Install dependencies from vcpkg.json
-        run: vcpkg install --triplet x64-windows
-
+      - name: Install dependencies
+        uses: microsoft/vcpkg-action@v8
+        with:
+            cache: true
 
       - name: Configure CMake
         run: >
