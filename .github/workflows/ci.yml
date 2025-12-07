@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
+        with:
+            vcpkgGitCommitId: "5b1214315250939257ef5d62ecdcbca18cf4fb1c"
 
       - name: Install dependencies from vcpkg.json
         run: vcpkg install --triplet x64-windows
