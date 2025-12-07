@@ -77,7 +77,7 @@ class AudioManager {
 
 		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
-		bool hasValidAudioDevice() { return this->hasValidAudioDevice; }
+		bool hasValidAudioDevice() { return this->validAudioDevice; }
 
 	private:
 		bool getAudioSample();		//Returns false if the sample is empty
