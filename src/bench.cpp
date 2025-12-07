@@ -82,8 +82,6 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        am.GetAudio();
-
         auto st = std::chrono::high_resolution_clock::now();
         am.RenderAudio(w, VBO, VAO);
         auto en = std::chrono::high_resolution_clock::now();
