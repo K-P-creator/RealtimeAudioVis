@@ -15,18 +15,17 @@ jobs:
         build_type: [Debug, Release]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Install vcpkg
+        uses: lukka/run-vcpkg@v11
 
-      - name: Install dependencies
-        uses: microsoft/vcpkg-action@v1
-        with:
-            cache: true
+      - name: Install dependencies from vcpkg.json
+        run: vcpkg install --triplet x64-windows
+
 
       - name: Configure CMake
         run: >
           cmake -B build -S .
-          -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake"
+          -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
           -DVCPKG_TARGET_TRIPLET=x64-windows
           -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
