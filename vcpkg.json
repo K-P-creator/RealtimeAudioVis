@@ -1,12 +1,16 @@
 {
-    "dependencies": [
-        "glfw3",
-        "glad",
-        {
-            "name": "imgui",
-            "features": ["glfw-binding", "opengl3-binding"]
-        },
-        "kissfft",
-        "gtest"
-    ]
+  "dependencies": [
+    "glfw3",
+    "glad",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "opengl3-binding"
+      ]
+    },
+    "kissfft",
+    "gtest"
+  ],
+  "builtin-baseline": "30d7c1678dd97d3501ff5e7a786b014ded607860"
 }
