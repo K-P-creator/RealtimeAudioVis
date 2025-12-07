@@ -77,6 +77,8 @@ class AudioManager {
 
 		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
+		bool hasValidAudioDevice() { return this->hasValidAudioDevice; }
+
 	private:
 		bool getAudioSample();		//Returns false if the sample is empty
 		void vectorizeMagnitudes();
@@ -90,6 +92,8 @@ class AudioManager {
 		IAudioClient* pAudioClient = NULL;
 		IAudioCaptureClient* pCaptureClient = NULL;
 		REFERENCE_TIME hnsRequestedDuration = REFTIMES_PER_SEC;
+
+		bool validAudioDevice = true;	//	For CI tests, no audio device present
 
 		// Global GUID's for devices
 		const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);

@@ -4,10 +4,13 @@
 
 TEST_F(AudioManagerTest, silenceTest) {
 	//	Get a few frames of audio
-	for (int i = 0; i < 10; i ++)
+	if (am.hasValidAudioDevice())
 	{
-		am.getAudioSample();
-		am.vectorizeMagnitudes();
+		for (int i = 0; i < 10; i++)
+		{
+			am.getAudioSample();
+			am.vectorizeMagnitudes();
+		}
 	}
 
 	//	Fill the sample wtih all 0's, should output all 0 magnitudes
@@ -27,7 +30,9 @@ TEST_F(AudioManagerTest, silenceTest) {
 	//	Set the smoothing and make sure the prevMangitudes is storing the correct data
 	//	These should be all zeros because we just filled with 0's
 	am.settings.smoothing = true;
-	am.getAudioSample();
+
+	if (am.hasValidAudioDevice())
+		am.getAudioSample();
 	am.vectorizeMagnitudes();
 	am.smoothMagnitudes();
 

@@ -6,19 +6,23 @@ on:
   pull_request:
     branches: [ main ]
 
+
 jobs:
   build-and-test:
     runs-on: windows-latest
 
+
     strategy:
       matrix:
         build_type: [Debug, Release]
+
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
             path: .
+
 
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
@@ -27,15 +31,8 @@ jobs:
             runVcpkgInstall: true
 
 
-      - name: Show workspace contents
-        run: |
-            echo "Workspace: $env:GITHUB_WORKSPACE"
-            Get-Location
-            dir
-
       - name: Configure CMake
         working-directory: ${{ github.workspace }}
-
         run: >
           cmake -B build -S .
           -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"

@@ -32,7 +32,11 @@ AudioManager::AudioManager()
 		// Get the default audio output (eRender for out)
 		hr = pEnumerator->GetDefaultAudioEndpoint(
 			eRender, eConsole, &pDevice);
-	THROW_ON_ERROR(hr, "Unable to source default audio output in AudioManager()")
+	if ((((HRESULT)(hr)) < 0)) {
+		std::cerr << "GetDefaultAudioEndpoint failed, hr = 0x"
+			<< std::hex << hr << std::dec << "\n";
+		hasValidAudioDevice = false;
+	}
 
 
 		// Get the audio client interface and store in pAudioClient

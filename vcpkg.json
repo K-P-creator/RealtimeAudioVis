@@ -1,19 +1,18 @@
 {
-    "name": "realtime-audio-vis",
-    "version": "0.1.0",
-
-    "dependencies": [
-        "glfw3",
-        "glad",
-        {
-            "name": "imgui",
-            "features": [
-                "glfw-binding",
-                "opengl3-binding"
-            ]
-        },
-        "kissfft",
-        "gtest"
-    ],
-    "builtin-baseline": "30d7c1678dd97d3501ff5e7a786b014ded607860"
+  "name": "realtime-audio-vis",
+  "version": "0.1.0",
+  "dependencies": [
+    "glfw3",
+    "glad",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "opengl3-binding"
+      ]
+    },
+    "kissfft",
+    "gtest"
+  ],
+  "builtin-baseline": "30d7c1678dd97d3501ff5e7a786b014ded607860"
 }
