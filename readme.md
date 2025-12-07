@@ -4,7 +4,7 @@
 
 Stack: OpenGL, GLFW, ImGui, kissFFT, vcpkg, cmake
 
-Visable audio frequencies range from ~ 1Hz - 7kHz
+Visible audio frequencies range from ~ 1Hz - 7kHz
 
 NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
 
@@ -104,6 +104,8 @@ https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
 The testing suite for AudioVis uses the Google Test framework. There is a limited number of tests at the moment, but more are planned. There is a test executable available to run in the build directory after building. I'm still working on configuring CI with github actions.  
 
 
+### CI
 
+The CI runs through github actions. Note that there will be no valid audio device in this case. In order to fully validate all tests, tests must be run locally with a valid audio device.
 
 
