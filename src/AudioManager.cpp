@@ -15,6 +15,10 @@ AudioManager::AudioManager()
 	audioSample.resize(FFT_COUNT);
 	visualData.resize(FFT_COUNT);
 
+	//	Set these before the possible early return
+	defaultShaderProgram = symmetricShaderProgram = doubleSymmetricShaderProgram = 0;
+	barCountUniform1 = barCountUniform2 = barCountUniform3 = colorLocation1 = colorLocation2 = colorLocation3 = 0;
+
 	// Contains high for failure, low for success
 	HRESULT hr;
 
@@ -32,6 +36,8 @@ AudioManager::AudioManager()
 		// Get the default audio output (eRender for out)
 		hr = pEnumerator->GetDefaultAudioEndpoint(
 			eRender, eConsole, &pDevice);
+
+	//	If there is no audio device (in the case of running CI tests)
 	if ((((HRESULT)(hr)) < 0)) {
 		std::cerr << "GetDefaultAudioEndpoint failed, hr = 0x"
 			<< std::hex << hr << std::dec << "\n";
@@ -74,9 +80,6 @@ AudioManager::AudioManager()
 	// Start recording audio
 	hr = pAudioClient->Start();
 	THROW_ON_ERROR(hr, "Unable to start audio client in AudioManager()");
-
-	defaultShaderProgram = symmetricShaderProgram = doubleSymmetricShaderProgram = 0;
-	barCountUniform1 = barCountUniform2 = barCountUniform3 = colorLocation1 = colorLocation2 = colorLocation3 = 0;
 }
 
 
