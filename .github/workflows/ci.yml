@@ -15,10 +15,16 @@ jobs:
         build_type: [Debug, Release]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+            path: .
+
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-            vcpkgGitCommitId: "5b1214315250939257ef5d62ecdcbca18cf4fb1c"
+            vcpkgJsonGlob: "vcpkg.json"
+            runVcpkgInstall: true
 
 
       - name: Show workspace contents
