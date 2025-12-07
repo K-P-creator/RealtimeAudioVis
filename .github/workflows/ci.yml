@@ -21,7 +21,15 @@ jobs:
             vcpkgGitCommitId: "5b1214315250939257ef5d62ecdcbca18cf4fb1c"
 
 
+      - name: Show workspace contents
+        run: |
+            echo "Workspace: $env:GITHUB_WORKSPACE"
+            Get-Location
+            dir
+
       - name: Configure CMake
+        working-directory: ${{ github.workspace }}
+
         run: >
           cmake -B build -S .
           -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
