@@ -3,12 +3,11 @@
 
 
 class AudioManagerTest : public ::testing::Test {
-	protected:
+	public:
 	AudioManager am;
 
 	void SetUp() override {
 		//	Assert that AM was constructed correctly
-
 		ASSERT_FALSE(am.magnitudes.empty());
 		ASSERT_TRUE(am.prevMagnitudes.empty());
 

@@ -1,9 +1,15 @@
 #include <gtest/gtest.h>
 #include <glad/glad.h>
 
-#include "audio_manager_test_class.h"
+#include "graphics_test_class.h"
 
-TEST_F(AudioManagerTest, compilationTest) {
+TEST_F(GraphicsTest, compilationTest) {
+	//	These tests only work if we can use OpenGL/glfw libraries
+	if (!hasWindow())
+	{
+		return;
+	}
+
 	int defaultVertexShaderSuccess;
 
 	GLuint vertexShader;

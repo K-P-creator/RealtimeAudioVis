@@ -43,11 +43,13 @@ struct Settings {
 
 //	Tests classes
 class AudioManagerTest;
+class GraphicsTest;
 class AudioManagerTest_silenceTest_Test;
 
 class AudioManager {
 	//	Need private member access for tests
 	friend class AudioManagerTest;	
+	friend class GraphicsTest;
 	friend class AudioManagerTest_silenceTest_Test;
 
 	public:
@@ -60,15 +62,15 @@ class AudioManager {
 		void openGLInit(GLuint& VBO, GLuint& VAO);
 		void compileShader(const char* source, GLuint& name, GLenum type, int & success);
 
-		GLuint getColorLocation1(){ return this->colorLocation1; }
-		GLuint getColorLocation2(){ return this->colorLocation2; }
-		GLuint getColorLocation3() { return this->colorLocation3; }
-		GLuint getBarCountUniform1(){ return this->barCountUniform1; }
-		GLuint getBarCountUniform2(){ return this->barCountUniform2; }
-		GLuint getBarCountUniform3() { return this->barCountUniform3; }
-		GLuint getDefaultShader() { return this->defaultShaderProgram; }
-		GLuint getSymmetricShader() { return this->symmetricShaderProgram; }
-		GLuint getDoubleSymmetricShader() { return this->doubleSymmetricShaderProgram; }
+		GLuint getColorLocation1() const { return this->colorLocation1; }
+		GLuint getColorLocation2() const { return this->colorLocation2; }
+		GLuint getColorLocation3() const { return this->colorLocation3; }
+		GLuint getBarCountUniform1() const { return this->barCountUniform1; }
+		GLuint getBarCountUniform2() const { return this->barCountUniform2; }
+		GLuint getBarCountUniform3() const { return this->barCountUniform3; }
+		GLuint getDefaultShader() const { return this->defaultShaderProgram; }
+		GLuint getSymmetricShader() const { return this->symmetricShaderProgram; }
+		GLuint getDoubleSymmetricShader() const { return this->doubleSymmetricShaderProgram; }
 
 		AudioManager(const AudioManager&) = delete;
 		AudioManager& operator=(const AudioManager&) = delete;	//	no copies
@@ -78,7 +80,7 @@ class AudioManager {
 
 		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
-		bool hasValidAudioDevice() { return this->validAudioDevice; }
+		bool hasValidAudioDevice() const { return this->validAudioDevice; }
 
 	private:
 		bool getAudioSample();		//Returns false if the sample is empty
