@@ -20,12 +20,11 @@ protected:
 
         ASSERT_TRUE(glfwInit());
 
-
         // Create hidden window for GL context
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         window = glfwCreateWindow(640, 480, "Tests", nullptr, nullptr);
         
-        //  If no window is able to be created (ie Actions VM) we run different versions of Graphics Tests
+        //  If no window is able to be created (ie Github Actions runner) we run different versions of Graphics Tests
         if (window == nullptr)
         {
             hasWindowCapability = false;
