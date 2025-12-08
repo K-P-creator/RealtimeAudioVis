@@ -27,6 +27,7 @@ jobs:
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
         with:
+            cache: true
             vcpkgJsonGlob: "vcpkg.json"
             runVcpkgInstall: true
 
