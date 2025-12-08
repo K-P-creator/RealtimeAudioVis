@@ -58,6 +58,7 @@ class AudioManager {
 		void SetColorFunction();
 		void UpdateSmoothing(int);
 		void openGLInit(GLuint& VBO, GLuint& VAO);
+		void compileShader(const char* source, GLuint& name, GLenum type, int & success);
 
 		GLuint getColorLocation1(){ return this->colorLocation1; }
 		GLuint getColorLocation2(){ return this->colorLocation2; }
@@ -82,6 +83,7 @@ class AudioManager {
 	private:
 		bool getAudioSample();		//Returns false if the sample is empty
 		void vectorizeMagnitudes();
+
 
 		GLuint defaultShaderProgram, symmetricShaderProgram, doubleSymmetricShaderProgram;
 		GLuint colorLocation1, colorLocation2, colorLocation3, barCountUniform1, barCountUniform2, barCountUniform3;
@@ -140,3 +142,14 @@ class AudioManager {
 		//	GPU side someday?
 		void smoothMagnitudes();
 };		
+
+static std::string fileToString(const char* path) {
+	std::ifstream file;
+	file.open(path);
+
+	if (!file) throw std::invalid_argument(std::string("Unable to open file: ") + path);
+
+	std::ostringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
+}

@@ -1,7 +1,5 @@
 ﻿#include "../include/AudioManager.h"
 
-static std::string fileToString(const char*);
-
 AudioManager::AudioManager()
 {
 	// Kiss FFT setup
@@ -387,38 +385,42 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	glfwSwapInterval(1); // Enable vsync
 
 
-	//  Set up shaders
-	int success;
-	auto shaderInit = [&success](const char* source, GLuint& name, GLenum type) {
-		name = glCreateShader(type);
-		glShaderSource(name, 1, &source, NULL);
-		glCompileShader(name);
-		glGetShaderiv(name, GL_COMPILE_STATUS, &success);
+	//	Switching this to a member function in order to allow for unit testing
+	
+	////  Set up shaders
+	//int success;
+	//auto shaderInit = [&success](const char* source, GLuint& name, GLenum type) {
+	//	name = glCreateShader(type);
+	//	glShaderSource(name, 1, &source, NULL);
+	//	glCompileShader(name);
+	//	glGetShaderiv(name, GL_COMPILE_STATUS, &success);
 
-		if (!success) {
-			GLint len = 0; glGetShaderiv(name, GL_INFO_LOG_LENGTH, &len);
-			std::string log(len, '\0');
-			glGetShaderInfoLog(name, len, nullptr, log.data());
-			std::cerr << "Shader compile failed (" << name << "):\n" << log << "\n";
-			std::abort();
-		}
-		};
+	//	if (!success) {
+	//		GLint len = 0; glGetShaderiv(name, GL_INFO_LOG_LENGTH, &len);
+	//		std::string log(len, '\0');
+	//		glGetShaderInfoLog(name, len, nullptr, log.data());
+	//		std::cerr << "Shader compile failed (" << name << "):\n" << log << "\n";
+	//		std::abort();
+	//	}
+	//};
 
 
 	defaultShaderProgram = glCreateProgram();
 	symmetricShaderProgram = glCreateProgram();
 	doubleSymmetricShaderProgram = glCreateProgram();
 
+	int success;
+
 	GLuint vertexShader;
-	shaderInit(fileToString("../shaders/default.vert").data(), vertexShader, GL_VERTEX_SHADER);
+	compileShader(fileToString("../shaders/default.vert").data(), vertexShader, GL_VERTEX_SHADER, success);
 	GLuint fragmentShader;
-	shaderInit(fileToString("../shaders/default.frag").data(), fragmentShader, GL_FRAGMENT_SHADER);
+	compileShader(fileToString("../shaders/default.frag").data(), fragmentShader, GL_FRAGMENT_SHADER, success);
 	GLuint symGeomShader;
-	shaderInit(fileToString("../shaders/symmetric.geom").data(), symGeomShader, GL_GEOMETRY_SHADER);
+	compileShader(fileToString("../shaders/symmetric.geom").data(), symGeomShader, GL_GEOMETRY_SHADER, success);
 	GLuint defGeomShader;
-	shaderInit(fileToString("../shaders/default.geom").data(), defGeomShader, GL_GEOMETRY_SHADER);
+	compileShader(fileToString("../shaders/default.geom").data(), defGeomShader, GL_GEOMETRY_SHADER, success);
 	GLuint dblSymGeomShader;
-	shaderInit(fileToString("../shaders/doubleSym.geom").data(), dblSymGeomShader, GL_GEOMETRY_SHADER);
+	compileShader(fileToString("../shaders/doubleSym.geom").data(), dblSymGeomShader, GL_GEOMETRY_SHADER, success);
 
 
 
@@ -490,15 +492,20 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 }
 
 
-static std::string fileToString(const char* path) {
-	std::ifstream file;
-	file.open(path);
+void AudioManager::compileShader(const char* source, GLuint& name, GLenum type, int &success) {
+	name = glCreateShader(type);
+	glShaderSource(name, 1, &source, NULL);
+	glCompileShader(name);
+	glGetShaderiv(name, GL_COMPILE_STATUS, &success);
 
-	if (!file) throw std::invalid_argument(std::string("Unable to open file: ") + path);
-
-	std::ostringstream ss;
-	ss << file.rdbuf();
-	return ss.str();
+	if (!success) {
+		GLint len = 0; 
+		glGetShaderiv(name, GL_INFO_LOG_LENGTH, &len);
+		std::string log(len, '\0');
+		glGetShaderInfoLog(name, len, nullptr, log.data());
+		std::cerr << "Shader compile failed (" << name << "):\n" << log << "\n";
+		std::abort();
+	}
 }
 
 
