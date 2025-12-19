@@ -79,6 +79,8 @@ Average Speedup:    19.6x speedup
 
 ### Build instructions
 
+**Note** - This will only build on windows (for now)
+
 This branch uses vcpkg for dependencies
 
 build with
@@ -107,5 +109,6 @@ The testing suite for AudioVis uses the Google Test framework. There is a test e
 ### CI
 
 The CI runs through github actions. Note that there will be no valid audio device in this case. In order to fully validate all tests, tests must be run locally with a valid audio device.
+
 
 
