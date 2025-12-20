@@ -45,12 +45,14 @@ struct Settings {
 class AudioManagerTest;
 class GraphicsTest;
 class AudioManagerTest_silenceTest_Test;
+class AudioManagerTest_smoothingTest_Test;
 
 class AudioManager {
 	//	Need private member access for tests
 	friend class AudioManagerTest;	
 	friend class GraphicsTest;
 	friend class AudioManagerTest_silenceTest_Test;
+	friend class AudioManagerTest_smoothingTest_Test;
 
 	public:
 		AudioManager();
