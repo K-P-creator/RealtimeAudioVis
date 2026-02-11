@@ -9,7 +9,7 @@
 #include <imgui_impl_opengl3.h>
 
 using namespace std;
-using FPSclock = chrono::high_resolution_clock;
+using FPSclock = chrono::steady_clock;
 
 static GLFWwindow* createWindow(int,int);
 static void toggleFullscreen(GLFWwindow*, bool);
@@ -72,13 +72,23 @@ int main() {
     bool first = true;
 
     //  Performance Metrics
+    bool hotFrame = false;
     int fps = 0;
     long long dt_us = 0;
     long long frameNumber = 0;
+    auto fpsTimerStart = FPSclock::now();
+    auto fpsTimerEnd = FPSclock::now();
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
-        auto fpsTimerStart = FPSclock::now();
+        //  Every 100 frames re-calculate perf data
+        if (frameNumber % 100 == 0)
+            hotFrame = true;
+        else hotFrame = false;
+
+
+        if (hotFrame)
+            fpsTimerStart = FPSclock::now();
 
         processInput(w);
 
@@ -156,7 +166,7 @@ int main() {
             ImGui::Begin("Performance Overlay");
 
             ImGui::Text("FPS: %d", fps);
-            ImGui::Text("Frame time: %.2f ms", static_cast<double>(dt_us)/1e6);
+            ImGui::Text("Frame time: %.2f ms", static_cast<double>(dt_us)/1e3);
 
             ImGui::End();
         }
@@ -169,10 +179,10 @@ int main() {
         glfwPollEvents();
         glfwSwapBuffers(w);
 
-        //  Every 100 frames re-calculate perf data
-        if (frameNumber % 100 == 0) {
-            auto fpsTimerEnd = FPSclock::now();
-            chrono::system_clock::duration diff = fpsTimerEnd - fpsTimerStart;
+
+        if (hotFrame) {
+            fpsTimerEnd = FPSclock::now();
+            FPSclock::duration diff = fpsTimerEnd - fpsTimerStart;
             dt_us = std::chrono::duration_cast<std::chrono::microseconds>(diff).count();
             fps = calculateFPS(dt_us);
         }
