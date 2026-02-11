@@ -34,20 +34,20 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{ github.workspace }}
-        run: >
-          cmake -B build -S .
-          -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
-          -DVCPKG_TARGET_TRIPLET=x64-windows
+        run: >          
+          cmake -S . -B build-mingw -G "MinGW Makefiles" 
+          -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake" 
+          -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic 
           -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-
+          
 
       - name: Build
         run: |
-          cmake --build build --config ${{ matrix.build_type }}
+          cmake --build build-mingw -j --config ${{ matrix.build_type}}
 
 
       - name: Run tests
         run: |
-          cd build
+          cd build-mingw
           ctest -C ${{ matrix.build_type }} --output-on-failure
