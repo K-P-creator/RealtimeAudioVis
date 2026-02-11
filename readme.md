@@ -20,11 +20,7 @@ I will also be switching from MSVC to MinGW.
 
 Stack: OpenGL, GLFW, imgui, kissFFT, vcpkg, cmake
 
-Toolchain: I use MinGW - your experience may vary if you pick another. 
-
-Visible audio frequencies range from ~ 1Hz - 7kHz
-
-NOTE this will change in future versions. I'm thinking 1-20kHz maybe with logarithmic x scaling...
+Toolchain: I use MinGW - your experience may vary if you pick another.
 
 I now support three visualization modes - Default, Symmetric, and Double Symmetric. These are all implemented by using different geometry shaders.
 
@@ -36,19 +32,9 @@ V2.0 switched to OpenGL and added a bunch of new stuff including Gtest, CI and m
 
 ### Design
 
-The pipeline flow is as follows:
+The data flow is as follows:
 
-Get audio sample, smooth it (optional) and translate to 2D vertices CPU side.
-
-Vertex shader places vertices 1-1 with points and fills in z/w coordinates.
-
-Geometric shader places the other 3 vertices per bar, this shader varies based off display mode and takes a uniform bar count for calculations. Every mode will perform some sort of transformation on the input vertices, turning them into triangle strips with 4 vertices. The double symmetric will duplicate them into two 4 vertex triangle strips.
-
-Fragment shader takes a uniform color and draws bars.
-
-I will eventually use GPU for smoothing calculations. This would be done in the vertex shader.
-
-I will also add per bar colors. This will be done in the fragment shader.
+WASAPI for audio samples -> kissFFT -> openGL pipeline (vertex->geometry->fragment)
 
 ### Benchmarks
 
@@ -65,6 +51,7 @@ Ensure that MinGW and CMake are installed and in the path, then use:
 ```cmd
 cmake -S . -B build-mingw -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 ```
+
 After, build with:
 
 ```cmd
