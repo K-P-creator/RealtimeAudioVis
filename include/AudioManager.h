@@ -108,14 +108,14 @@ class AudioManager {
 		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 		//	For capture client
-		BYTE* pData = NULL;
+		BYTE* pData = nullptr;
 		UINT32 numFramesAvailable = 0;
-		DWORD flags = NULL;
-		HRESULT hr = NULL;
+		DWORD flags = 0;
+		HRESULT hr = 0;
 		int numChannels = 0;
 
 		// Struct to describe the audio properties
-		WAVEFORMATEX* pwfx = NULL;
+		WAVEFORMATEX* pwfx = nullptr;
 
 		// Kiss FFT
 		kiss_fft_cfg cfg = nullptr;
