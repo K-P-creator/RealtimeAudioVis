@@ -1,8 +1,11 @@
 # Realtime Audio Vis
 
+A real-time audio visualization engine built with OpenGL and WASAPI.
+
 ## 3.0 Version Info
 
 Version 3.0 will focus initially on improving diversity of the performance data that is collected. Some metrics I will collect:
+
 1. Frame times
 2. FPS
 3. Component times (WASAPI call, FFT, Draw sequence)
@@ -14,15 +17,23 @@ There will be new fragment shaders that allow for custom color modes for bars.
 
 A framerate independent smoothing algorithm will be implemented. I plan on calculating a maximum bar velocity based on dt for frames. 
 
-I will also be switching from MSVC to MinGW.
+I will also be switching from MSVC to MinGW for more portability in the future.
 
-## Info
+---
 
-Stack: OpenGL, GLFW, imgui, kissFFT, vcpkg, cmake
+## Project Info
 
-Toolchain: I use MinGW - your experience may vary if you pick another.
+**Stack**: OpenGL, GLFW, imgui, kissFFT, vcpkg, cmake
+
+**Toolchain**: I use MinGW - your experience may vary if you pick another.
 
 I now support three visualization modes - Default, Symmetric, and Double Symmetric. These are all implemented by using different geometry shaders.
+
+### V2.0 Demo
+
+*Note that this demo is at 2x speed to keep the file size down*
+
+https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
 
 ### Build instructions
 
@@ -45,11 +56,7 @@ After, build with:
 cmake --build build-mingw -j
 ```
 
-### Older Versions
-
-The original version used SFML and no OpenGL at all. See releases.
-
-V2.0 switched to OpenGL and added a bunch of new stuff including Gtest, CI and more.
+---
 
 ## Design
 
@@ -59,35 +66,58 @@ WASAPI for audio samples -> kissFFT -> openGL pipeline (vertex->geometry->fragme
 
 ### Components (V2.0)
 
-* Audio Manager - Monolithic class that handles the entire data flow (for now)
+**Audio Manager**
+
+Monolithic class that handles the entire data flow.
 
 ### Components (V3.0)
 
-V3 will break up the audio manager into separate classes. Here is the current design:
-* Audio Sampler - Abstract class that has implementations for Windows and eventually Linux audio sampling.
-* Audio Manager - This class will be majorly refactored. It will handle the FFT transform and any other CPU side adjustments made to audio data (smoothing etc.).
-* Render Manager - Contains all  OpenGL API calls and handles everything related to graphics (shader compilation, uniform binding etc.). 
-* Performance Manager - Collects all performance data, and will store to a JSON file when running benchmarks.
+V3 will break up the audio manager into separate classes. Here is the current design (work in progress):
 
-### Benchmarks
+**Audio Sampler**
 
-Benchmarks to come for V3.0
+Abstract class that has implementations for Windows and eventually Linux audio sampling.
 
-### V2.0 Demo
+**Audio Manager**
+ 
+This class will be majorly refactored. It will handle the FFT transform and any other CPU side adjustments made to audio data (smoothing etc.).
 
-*Note that this demo is at 2x speed to keep the file size down*
+**Render Manager**
 
-https://github.com/user-attachments/assets/9551f810-fc6d-41e6-b236-5088b9b88612
+Contains all  OpenGL API calls and handles everything related to graphics (shader compilation, uniform binding etc.).
 
-### Tests
+**GUI Manager**
 
-The testing suite for AudioVis uses the Google Test framework. There is a test executable available to run in the build directory after building.  
+Contains all imgui API calls.
+
+**Performance Manager**
+
+Collects all performance data, and will store to a JSON file when running benchmarks.
+
+---
+
+## Benchmarks
+
+*Benchmarks to come for V3.0*
+
+---
+
+## Tests
+
+The testing suite for AudioVis uses the **Google Test** framework. There is a test executable available to run in the build directory after building.  
 
 No new tests added for V3.0 yet, coming soon.
 
 ### CI
 
-The CI runs through GitHub actions. Note that there will be no valid audio device in this case. In order to fully validate all tests, tests must be run locally with a valid audio device.
+The CI runs through **GitHub actions**. Note that there will be no valid audio device in this case. In order to fully validate all tests, tests must be run locally with a valid audio device.
 
+---
 
+## Older Versions
 
+All older versions have their own releases.
+
+The original version used SFML and no OpenGL at all.
+
+V2.0 switched to OpenGL and added a bunch of new stuff including Gtest, CI and more.
