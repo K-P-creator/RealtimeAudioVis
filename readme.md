@@ -24,32 +24,19 @@ Toolchain: I use MinGW - your experience may vary if you pick another.
 
 I now support three visualization modes - Default, Symmetric, and Double Symmetric. These are all implemented by using different geometry shaders.
 
-### Older Versions
-
-The original version used SFML and no OpenGL at all. See releases.
-
-V2.0 switched to OpenGL and added a bunch of new stuff including Gtest, CI and more.
-
-### Design
-
-The data flow is as follows:
-
-WASAPI for audio samples -> kissFFT -> openGL pipeline (vertex->geometry->fragment)
-
-### Benchmarks
-
-Benchmarks to come for V3.0
-
 ### Build instructions
 
-**Note** - This will only build on Windows (for now)
+**Note** - This will only build on Windows, I use the WASAPI to sample system sound.
 
-This branch uses vcpkg for dependencies. The following assumes your vcpkg is at the system root.
+This branch uses vcpkg for dependencies. The following assumes your vcpkg is in the `C:/` directory.
 
-Ensure that MinGW and CMake are installed and in the path, then use: 
+Ensure that MinGW and CMake are installed and in the path, then configure CMake with:
 
 ```cmd
-cmake -S . -B build-mingw -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake -S . -B build-mingw -G "MinGW Makefiles" ^
+-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+-DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic ^
+-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 ```
 
 After, build with:
@@ -57,6 +44,34 @@ After, build with:
 ```cmd
 cmake --build build-mingw -j
 ```
+
+### Older Versions
+
+The original version used SFML and no OpenGL at all. See releases.
+
+V2.0 switched to OpenGL and added a bunch of new stuff including Gtest, CI and more.
+
+## Design
+
+The data flow is as follows:
+
+WASAPI for audio samples -> kissFFT -> openGL pipeline (vertex->geometry->fragment)
+
+### Components (V2.0)
+
+* Audio Manager - Monolithic class that handles the entire data flow (for now)
+
+### Components (V3.0)
+
+V3 will break up the audio manager into separate classes. Here is the current design:
+* Audio Sampler - Abstract class that has implementations for Windows and eventually Linux audio sampling.
+* Audio Manager - This class will be majorly refactored. It will handle the FFT transform and any other CPU side adjustments made to audio data (smoothing etc.).
+* Render Manager - Contains all  OpenGL API calls and handles everything related to graphics (shader compilation, uniform binding etc.). 
+* Performance Manager - Collects all performance data, and will store to a JSON file when running benchmarks.
+
+### Benchmarks
+
+Benchmarks to come for V3.0
 
 ### V2.0 Demo
 
