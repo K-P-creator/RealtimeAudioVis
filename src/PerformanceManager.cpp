@@ -26,8 +26,10 @@ PerformanceManager::PerformanceManager()
 
 PerformanceManager::~PerformanceManager()
 {
-    if (systemTimerRunning)
+    if (systemTimerRunning) {
         stopSystemTimer();
+        writePerformanceData();
+    }
 }
 
 void PerformanceManager::startFrameTimer()
@@ -104,10 +106,15 @@ void PerformanceManager::writePerformanceData()     //  Writes to std::cout for 
     std::cout << "----------------------------------------------------\n";
     std::cout << "             Performance Summary\n";
     std::cout << "----------------------------------------------------\n";
-    std::cout << "System Runtime: " << systemRunTime.count() << " us\n";
-    std::cout << "Frames:         " << frameCounter  << "\n";
-    std::cout << "FFTs:           " << fftCounter    << "\n";
-    std::cout << "Renders:        " << renderCounter << "\n";
+    std::cout << "System Runtime:      " << getSystemRunTime_s() << " s\n";
+    std::cout << "Frames Measured:     " << frameCounter  << "\n";
+    std::cout << "FFTs Measured:       " << fftCounter    << "\n";
+    std::cout << "Renders Measured:    " << renderCounter << "\n";
+    std::cout << std::endl;
+    std::cout << "----------------------------------------------------\n";
+    std::cout << "Average Frame Time:  " << getAverageFrameTime() << " us\n";
+    std::cout << "Average FFT Time:    " << getAverageFFTTime() << " us\n";
+    std::cout << "Average Render Time: " << getAverageRenderTime() << " us\n";
 }
 
 
@@ -144,6 +151,10 @@ us PerformanceManager::getAverageFrameTime() const
     if (frameCounter == 0) return std::chrono::microseconds(0);
     return std::chrono::microseconds(frameTimeAccumulator_us/frameCounter);
 }
+unsigned long long PerformanceManager::getSystemRunTime_s() const
+{
+    return (static_cast<unsigned long long>(systemRunTime.count()) / 1000000); // Divide by 10e6 to get seconds
+}
 
 
 // ----------------------------------------------------
@@ -164,6 +175,7 @@ us PerformanceManager::stopSystemTimer()
     const us duration = calculateTimeDifference(systemStartTime, end);
 
     systemTimerRunning = false;
+    systemRunTime = duration;
 
     return duration;
 }

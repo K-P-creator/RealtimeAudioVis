@@ -37,6 +37,8 @@ public:
     [[nodiscard]] us getAverageRenderTime() const;
     [[nodiscard]] us getAverageFrameTime() const;
 
+    [[nodiscard]] unsigned long long getSystemRunTime_s() const;
+
 private:
     void startSystemTimer();    // Called in constructor
     us stopSystemTimer();     // Called inside writePerformanceData()

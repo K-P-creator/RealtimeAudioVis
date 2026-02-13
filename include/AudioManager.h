@@ -58,21 +58,21 @@ class AudioManager {
 		AudioManager();
 		~AudioManager() noexcept;
 
-		void RenderAudio(GLFWwindow *, GLuint &VBO, GLuint &VAO);
-		void SetColorFunction();
+		void RenderAudio(const GLFWwindow *, const GLuint &VBO, const GLuint &VAO);
+		// void SetColorFunction();
 		void UpdateSmoothing(int);
 		void openGLInit(GLuint& VBO, GLuint& VAO);
-		void compileShader(const char* source, GLuint& name, GLenum type, int & success);
+		static void compileShader(const char* source, GLuint& name, GLenum type, int & success);
 
-		GLuint getColorLocation1() const { return this->colorLocation1; }
-		GLuint getColorLocation2() const { return this->colorLocation2; }
-		GLuint getColorLocation3() const { return this->colorLocation3; }
-		GLuint getBarCountUniform1() const { return this->barCountUniform1; }
-		GLuint getBarCountUniform2() const { return this->barCountUniform2; }
-		GLuint getBarCountUniform3() const { return this->barCountUniform3; }
-		GLuint getDefaultShader() const { return this->defaultShaderProgram; }
-		GLuint getSymmetricShader() const { return this->symmetricShaderProgram; }
-		GLuint getDoubleSymmetricShader() const { return this->doubleSymmetricShaderProgram; }
+		[[nodiscard]] GLuint getColorLocation1() const { return this->colorLocation1; }
+		[[nodiscard]] GLuint getColorLocation2() const { return this->colorLocation2; }
+		[[nodiscard]] GLuint getColorLocation3() const { return this->colorLocation3; }
+		[[nodiscard]] GLuint getBarCountUniform1() const { return this->barCountUniform1; }
+		[[nodiscard]] GLuint getBarCountUniform2() const { return this->barCountUniform2; }
+		[[nodiscard]] GLuint getBarCountUniform3() const { return this->barCountUniform3; }
+		[[nodiscard]] GLuint getDefaultShader() const { return this->defaultShaderProgram; }
+		[[nodiscard]] GLuint getSymmetricShader() const { return this->symmetricShaderProgram; }
+		[[nodiscard]] GLuint getDoubleSymmetricShader() const { return this->doubleSymmetricShaderProgram; }
 
 		AudioManager(const AudioManager&) = delete;
 		AudioManager& operator=(const AudioManager&) = delete;	//	no copies
@@ -82,7 +82,7 @@ class AudioManager {
 
 		Settings settings{DEFAULT_SETTINGS};	// Defined in Globals.h
 
-		bool hasValidAudioDevice() const { return this->validAudioDevice; }
+		[[nodiscard]] bool hasValidAudioDevice() const { return this->validAudioDevice; }
 
 	private:
 		bool getAudioSample();		//Returns false if the sample is empty
@@ -93,10 +93,10 @@ class AudioManager {
 		GLuint colorLocation1, colorLocation2, colorLocation3, barCountUniform1, barCountUniform2, barCountUniform3;
 
 		// WASAPI interfaces
-		IMMDeviceEnumerator* pEnumerator = NULL;
-		IMMDevice* pDevice = NULL;
-		IAudioClient* pAudioClient = NULL;
-		IAudioCaptureClient* pCaptureClient = NULL;
+		IMMDeviceEnumerator* pEnumerator = nullptr;
+		IMMDevice* pDevice = nullptr;
+		IAudioClient* pAudioClient = nullptr;
+		IAudioCaptureClient* pCaptureClient = nullptr;
 		REFERENCE_TIME hnsRequestedDuration = REFTIMES_PER_SEC;
 
 		bool validAudioDevice = true;	//	For CI tests, no audio device present

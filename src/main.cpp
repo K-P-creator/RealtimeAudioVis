@@ -80,7 +80,7 @@ int main() {
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
-        if (frameCount % 1000 == 0)
+        if (frameCount % 500 == 0)
             pm.startFrameTimer();
 
         processInput(w);
@@ -174,7 +174,7 @@ int main() {
 
         glfwPollEvents();
         glfwSwapBuffers(w);
-        if (frameCount % 1000 == 0) {
+        if (frameCount % 500 == 0) {
             frameTime = pm.stopFrameTimer();
             averageFrameTime = pm.getAverageFrameTime();
         }

@@ -63,14 +63,14 @@ AudioManager::AudioManager()
 			hnsRequestedDuration,
 			0,
 			pwfx,
-			NULL);
+			nullptr);
 	THROW_ON_ERROR(hr, "Unable to initialize audio client in AudioManager()")
 
 
 		// Get the capture client to actually listen
 		hr = pAudioClient->GetService(
 			IID_IAudioCaptureClient,
-			(void**)&pCaptureClient);
+			reinterpret_cast<void **>(&pCaptureClient));
 	THROW_ON_ERROR(hr, "Unable to get capture client in AudioManager()");
 
 
@@ -89,7 +89,7 @@ AudioManager::~AudioManager() noexcept
 	}
 	if (pwfx) {
 		CoTaskMemFree(pwfx);
-		pwfx = NULL;
+		pwfx = nullptr;
 	}
 	if (pDevice) {
 		pDevice->Release();
@@ -321,6 +321,7 @@ void AudioManager::RenderAudio(const GLFWwindow* w, const GLuint& VBO, const GLu
 			glUniform1i(barCountUniform3, BAR_COUNT);
 			prevModeIndx = settings.modeIndex;
 			break;
+		default: ;
 		}
 	}
 
@@ -380,26 +381,6 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	std::cout << "Renderer: \t" << glGetString(GL_RENDERER) << "\n";
 	std::cout << "Version:  \t" << glGetString(GL_VERSION) << "\n";
 	//glfwSwapInterval(1); // Enable vsync
-
-
-	//	Switching this to a member function in order to allow for unit testing
-	
-	////  Set up shaders
-	//int success;
-	//auto shaderInit = [&success](const char* source, GLuint& name, GLenum type) {
-	//	name = glCreateShader(type);
-	//	glShaderSource(name, 1, &source, NULL);
-	//	glCompileShader(name);
-	//	glGetShaderiv(name, GL_COMPILE_STATUS, &success);
-
-	//	if (!success) {
-	//		GLint len = 0; glGetShaderiv(name, GL_INFO_LOG_LENGTH, &len);
-	//		std::string log(len, '\0');
-	//		glGetShaderInfoLog(name, len, nullptr, log.data());
-	//		std::cerr << "Shader compile failed (" << name << "):\n" << log << "\n";
-	//		std::abort();
-	//	}
-	//};
 
 
 	defaultShaderProgram = glCreateProgram();
