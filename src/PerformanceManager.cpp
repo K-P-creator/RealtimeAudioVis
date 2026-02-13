@@ -16,7 +16,7 @@ static us calculateTimeDifference(const timePoint& start,
 }
 
 // ----------------------------------------------------
-// Public API functions
+// Benchmark API Functions
 // ----------------------------------------------------
 
 PerformanceManager::PerformanceManager()
@@ -41,11 +41,13 @@ us PerformanceManager::stopFrameTimer()
 {
     assert(frameTimerRunning);
 
-    timePoint end = std::chrono::steady_clock::now();
-    us duration = calculateTimeDifference(startFrameTime, end);
+    const timePoint end = std::chrono::steady_clock::now();
+    const us duration = calculateTimeDifference(startFrameTime, end);
 
     frameTimerRunning = false;
     frameCounter++;
+    mostRecentFrameTime_us = duration.count();
+    frameTimeAccumulator_us += duration.count();
 
     return duration;
 }
@@ -61,11 +63,13 @@ us PerformanceManager::stopFFTTimer()
 {
     assert(fftTimerRunning);
 
-    timePoint end = std::chrono::steady_clock::now();
-    us duration = calculateTimeDifference(startFFTTime, end);
+    const timePoint end = std::chrono::steady_clock::now();
+    const us duration = calculateTimeDifference(startFFTTime, end);
 
     fftTimerRunning = false;
     fftCounter++;
+    mostRecentFFTTime_us = duration.count();
+    fftTimeAccumulator_us += duration.count();
 
     return duration;
 }
@@ -81,11 +85,13 @@ us PerformanceManager::stopRenderTimer()
 {
     assert(renderTimerRunning);
 
-    timePoint end = std::chrono::steady_clock::now();
-    us duration = calculateTimeDifference(startRenderTime, end);
+    const timePoint end = std::chrono::steady_clock::now();
+    const us duration = calculateTimeDifference(startRenderTime, end);
 
     renderTimerRunning = false;
     renderCounter++;
+    mostRecentRenderTime_us = duration.count();
+    renderTimeAccumulator_us += duration.count();
 
     return duration;
 }
@@ -104,6 +110,42 @@ void PerformanceManager::writePerformanceData()     //  Writes to std::cout for 
     std::cout << "Renders:        " << renderCounter << "\n";
 }
 
+
+// ----------------------------------------------------
+// Performance Overlay API functions
+// ----------------------------------------------------
+
+
+us PerformanceManager::getCurrentFFTTime() const
+{
+    return std::chrono::microseconds (mostRecentFFTTime_us);
+}
+
+us PerformanceManager::getCurrentRenderTime() const
+{
+    return std::chrono::microseconds(mostRecentRenderTime_us);
+}
+us PerformanceManager::getCurrentFrameTime() const
+{
+    return std::chrono::microseconds (mostRecentFrameTime_us);
+}
+us PerformanceManager::getAverageFFTTime() const
+{
+    if (fftCounter == 0) return std::chrono::microseconds(0);
+    return std::chrono::microseconds(fftTimeAccumulator_us/fftCounter);
+}
+us PerformanceManager::getAverageRenderTime() const
+{
+    if (renderCounter == 0) return std::chrono::microseconds(0);
+    return std::chrono::microseconds(renderTimeAccumulator_us/renderCounter);
+}
+us PerformanceManager::getAverageFrameTime() const
+{
+    if (frameCounter == 0) return std::chrono::microseconds(0);
+    return std::chrono::microseconds(frameTimeAccumulator_us/frameCounter);
+}
+
+
 // ----------------------------------------------------
 // Private Class functions
 // ----------------------------------------------------
@@ -118,8 +160,8 @@ us PerformanceManager::stopSystemTimer()
 {
     assert(systemTimerRunning);
 
-    timePoint end = std::chrono::steady_clock::now();
-    us duration = calculateTimeDifference(systemStartTime, end);
+    const timePoint end = std::chrono::steady_clock::now();
+    const us duration = calculateTimeDifference(systemStartTime, end);
 
     systemTimerRunning = false;
 
