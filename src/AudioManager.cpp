@@ -363,11 +363,11 @@ void AudioManager::genColors() {
 
 void AudioManager::UpdateSmoothing(int val) {
 	switch (val) {
-	case 1: settings.smoothingCoef = 0.9999f; break;
-	case 2: settings.smoothingCoef = 0.99999999f; break;
-	case 3: settings.smoothingCoef = 0.999999999999f; break;
-	case 4: settings.smoothingCoef = 0.9999999999999999999f; break;
-	case 5: settings.smoothingCoef = 0.999999999999999999999999999f; break;
+	case 1: settings.smoothingCoef = 0.8f; break;
+	case 2: settings.smoothingCoef = 0.9; break;
+	case 3: settings.smoothingCoef = 0.95f; break;
+	case 4: settings.smoothingCoef = 0.99; break;
+	case 5: settings.smoothingCoef = 0.999; break;
 	default: throw std::runtime_error("Invalid smoothing coef selection\n");
 	}
 }
@@ -382,7 +382,7 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 	std::cout << "Vendor:   \t" << glGetString(GL_VENDOR) << "\n";
 	std::cout << "Renderer: \t" << glGetString(GL_RENDERER) << "\n";
 	std::cout << "Version:  \t" << glGetString(GL_VERSION) << "\n";
-	glfwSwapInterval(1); // Enable vsync
+	//glfwSwapInterval(1); // Enable vsync
 
 
 	//	Switching this to a member function in order to allow for unit testing
