@@ -18,16 +18,15 @@ AudioManager::AudioManager()
 	barCountUniform1 = barCountUniform2 = barCountUniform3 = colorLocation1 = colorLocation2 = colorLocation3 = 0;
 
 	// Contains high for failure, low for success
-	HRESULT hr;
 
-	hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	THROW_ON_ERROR(hr, "Unable to initialize COM library in AudioManager()");
 
 	// Create instance of COM object in pEnumerator
 	hr = CoCreateInstance(
-		CLSID_MMDeviceEnumerator, NULL,
+		CLSID_MMDeviceEnumerator, nullptr,
 		CLSCTX_ALL, IID_IMMDeviceEnumerator,
-		(void**)&pEnumerator);
+		reinterpret_cast<void **>(&pEnumerator));
 	THROW_ON_ERROR(hr, "Unable to Initialize pEnumerator in AudioManager()")
 
 
@@ -47,7 +46,7 @@ AudioManager::AudioManager()
 		// Get the audio client interface and store in pAudioClient
 		hr = pDevice->Activate(
 			IID_IAudioClient, CLSCTX_ALL,
-			NULL, (void**)&pAudioClient);
+			nullptr, reinterpret_cast<void **>(&pAudioClient));
 	THROW_ON_ERROR(hr, "Unable to get audio client in AudioManager()")
 
 
@@ -189,7 +188,7 @@ bool AudioManager::getAudioSample()
 	numChannels = pwfx->nChannels;
 
 	// Get the current audio buffer
-	hr = pCaptureClient->GetBuffer(&pData, &numFramesAvailable, &flags, NULL, NULL);
+	hr = pCaptureClient->GetBuffer(&pData, &numFramesAvailable, &flags, nullptr, nullptr);
 	if (FAILED(hr))
 	{
 		pCaptureClient->ReleaseBuffer(numFramesAvailable);
@@ -215,7 +214,7 @@ bool AudioManager::getAudioSample()
 void AudioManager::vectorizeMagnitudes()
 {
 	// Copy the audio sample into a kissfft friendly vector
-	float* floatData = reinterpret_cast<float*>(pData);
+	const auto* floatData = reinterpret_cast<float*>(pData);
 
 	for (UINT32 i = 0; i < numFramesAvailable; ++i) {
 		if (numChannels == 2) {
@@ -262,15 +261,13 @@ void AudioManager::vectorizeMagnitudes()
 		for (UINT32 i = 0; i < FFT_COUNT / 2; ++i) {
 			magnitudes[i] = sqrtf(visualData[i].r * visualData[i].r + visualData[i].i * visualData[i].i);
 			magnitudes[i] = log2(magnitudes[i]);
-			magnitudes[i] *= static_cast<float>(settings.windowHeight / 10.0f);
+			magnitudes[i] *= static_cast<float>(settings.windowHeight) / 10.0f;
 		}
 	}
-
-	return;
 }
 
 
-void AudioManager::RenderAudio(GLFWwindow* w, GLuint& VBO, GLuint& VAO)
+void AudioManager::RenderAudio(const GLFWwindow* w, const GLuint& VBO, const GLuint& VAO)
 {
 	if (!w) throw (std::invalid_argument("No render window found in RenderAudio()"));
 
@@ -292,7 +289,7 @@ void AudioManager::RenderAudio(GLFWwindow* w, GLuint& VBO, GLuint& VAO)
 		GL_FLOAT,           // type
 		GL_TRUE,           // normalized?
 		2 * sizeof(float),  // stride (distance between consecutive vertices)
-		(void*)0            // offset in the buffer
+		static_cast<void*>(nullptr)            // offset in the buffer
 	);
 
 
@@ -334,15 +331,15 @@ void AudioManager::RenderAudio(GLFWwindow* w, GLuint& VBO, GLuint& VAO)
 
 void AudioManager::genMinVerts() {
 	static bool first = true;
-	float pixPerBar = settings.windowWidth / float(BAR_COUNT);
+	const float pixPerBar = static_cast<float>(settings.windowWidth) / static_cast<float>(BAR_COUNT);
 
-	float horizScale = 2.0f * float(pixPerBar) / float(settings.windowWidth);
-	float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
+	const float horizScale = 2.0f * static_cast<float>(pixPerBar) / static_cast<float>(settings.windowWidth);
+	const float vertScale = this->settings.barHeightScale * 1 / this->settings.windowHeight;
 
 	if (first) minVerts.resize(BAR_COUNT * 2);
 
 	for (int i = 0; i < BAR_COUNT; i++) {
-		minVerts[i * 2] = i * horizScale - 1.0f;	//	x
+		minVerts[i * 2] = static_cast<float>(i) * horizScale - 1.0f;	//	x
 		if (magnitudes[i] <= 0.01f)			// y
 			minVerts[i * 2 + 1] = 0.01f;
 		else
@@ -353,15 +350,15 @@ void AudioManager::genMinVerts() {
 
 void AudioManager::genColors() {
 	for (int i = 0; i < BAR_COUNT; i++) {
-		int indx = i * 3;
-		colors[indx] = settings.baseColor[0];
-		colors[indx + 1] = settings.baseColor[1];
-		colors[indx + 2] = settings.baseColor[2];
+		int index = i * 3;
+		colors[index] = settings.baseColor[0];
+		colors[index + 1] = settings.baseColor[1];
+		colors[index + 2] = settings.baseColor[2];
 	}
 }
 
 
-void AudioManager::UpdateSmoothing(int val) {
+void AudioManager::UpdateSmoothing(const int val) {
 	switch (val) {
 	case 1: settings.smoothingCoef = 0.8f; break;
 	case 2: settings.smoothingCoef = 0.9; break;
@@ -374,7 +371,7 @@ void AudioManager::UpdateSmoothing(int val) {
 
 
 void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
 		std::cerr << "Failed to load openGL func pointers with glad\n";
 		std::abort();
 	}
@@ -492,9 +489,9 @@ void AudioManager::openGLInit(GLuint& VBO, GLuint& VAO) {
 }
 
 
-void AudioManager::compileShader(const char* source, GLuint& name, GLenum type, int &success) {
+void AudioManager::compileShader(const char* source, GLuint& name, const GLenum type, int &success) {
 	name = glCreateShader(type);
-	glShaderSource(name, 1, &source, NULL);
+	glShaderSource(name, 1, &source, nullptr);
 	glCompileShader(name);
 	glGetShaderiv(name, GL_COMPILE_STATUS, &success);
 
