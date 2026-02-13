@@ -1,6 +1,7 @@
 //Main loop for visualization
 
 #include "../include/AudioManager.h"
+#include "../include/PerformanceManager.h"
 
 #include <chrono>
 
@@ -15,7 +16,7 @@ static GLFWwindow* createWindow(int,int);
 static void toggleFullscreen(GLFWwindow*, bool);
 static void error_callback(int, const char*);
 static void processInput(GLFWwindow *);
-static inline int calculateFPS(long long);
+static inline int calculateFPS(unsigned long long);
 
 struct ImGuiSettings{
     bool perfOverlay;
@@ -72,23 +73,15 @@ int main() {
     bool first = true;
 
     //  Performance Metrics
-    bool hotFrame = false;
-    int fps = 0;
-    long long dt_us = 0;
-    long long frameNumber = 0;
-    auto fpsTimerStart = FPSclock::now();
-    auto fpsTimerEnd = FPSclock::now();
+    chrono::microseconds frameTime(0);
+    chrono::microseconds averageFrameTime(0);
+    PerformanceManager pm;
+    unsigned long long frameCount = 0;
 
     //Main Loop
     while (!glfwWindowShouldClose(w)) {
-        //  Every 100 frames re-calculate perf data
-        if (frameNumber % 100 == 0)
-            hotFrame = true;
-        else hotFrame = false;
-
-
-        if (hotFrame)
-            fpsTimerStart = FPSclock::now();
+        if (frameCount % 1000 == 0)
+            pm.startFrameTimer();
 
         processInput(w);
 
@@ -165,8 +158,11 @@ int main() {
         if (GuiSettings.perfOverlay){
             ImGui::Begin("Performance Overlay");
 
-            ImGui::Text("FPS: %d", fps);
-            ImGui::Text("Frame time: %.2f ms", static_cast<double>(dt_us)/1e3);
+            ImGui::Text("FPS: %d", calculateFPS(static_cast<unsigned long long>(frameTime.count())));
+            ImGui::Text("Frame time: %.2f us", static_cast<double>(frameTime.count()));
+
+            ImGui::Text("Average FPS: %d", calculateFPS(static_cast<unsigned long long>(averageFrameTime.count())));
+            ImGui::Text("Frame time: %.2f us", static_cast<double>(averageFrameTime.count()));
 
             ImGui::End();
         }
@@ -178,15 +174,12 @@ int main() {
 
         glfwPollEvents();
         glfwSwapBuffers(w);
-
-
-        if (hotFrame) {
-            fpsTimerEnd = FPSclock::now();
-            FPSclock::duration diff = fpsTimerEnd - fpsTimerStart;
-            dt_us = std::chrono::duration_cast<std::chrono::microseconds>(diff).count();
-            fps = calculateFPS(dt_us);
+        if (frameCount % 1000 == 0) {
+            frameTime = pm.stopFrameTimer();
+            averageFrameTime = pm.getAverageFrameTime();
         }
-        frameNumber++;
+
+        frameCount++;
     }
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -251,7 +244,7 @@ void processInput(GLFWwindow* window) {
 
 
 //  FPS = 1/(frame time(s))
-static inline int calculateFPS(const long long dt_us){
+static inline int calculateFPS(const unsigned long long dt_us){
     if (dt_us <= 0) return 0;
     return static_cast<int>(1e6 / static_cast<double>(dt_us));
 }
