@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CTest)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/AudioManager.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/AudioManager.cpp src/PerformanceManager.cpp)
 add_executable("Benchmarks" src/bench.cpp src/AudioManager.cpp src/PerformanceManager.cpp)
 
 file (GLOB TEST_SOURCES tests/test_*.cpp)
