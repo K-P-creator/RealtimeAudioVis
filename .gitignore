@@ -53,6 +53,11 @@ vcpkg_installed/
 
 # build directory
 build/
+build-*/
+
+# Cmake build output
+cmake-*/
+
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -101,6 +106,10 @@ StyleCopReport.xml
 *.pgc
 *.pgd
 *.rsp
+
+# Files from CLion
+.idea/
+
 # but not Directory.Build.rsp, as it configures directory-level build defaults
 !Directory.Build.rsp
 *.sbr
