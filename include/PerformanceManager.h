@@ -37,7 +37,7 @@ public:
     [[nodiscard]] us getAverageRenderTime() const;
     [[nodiscard]] us getAverageFrameTime() const;
 
-    [[nodiscard]] unsigned long long getSystemRunTime_s() const;
+    [[nodiscard]] std::chrono::seconds getSystemRunTime() const;
 
 private:
     void startSystemTimer();    // Called in constructor
