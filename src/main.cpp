@@ -159,10 +159,10 @@ int main() {
             ImGui::Begin("Performance Overlay");
 
             ImGui::Text("FPS: %d", calculateFPS(static_cast<unsigned long long>(frameTime.count())));
-            ImGui::Text("Frame time: %.2f us", static_cast<double>(frameTime.count()));
+            ImGui::Text("Frame time: %dus", static_cast<unsigned long long>(frameTime.count()));
 
             ImGui::Text("Average FPS: %d", calculateFPS(static_cast<unsigned long long>(averageFrameTime.count())));
-            ImGui::Text("Average Frame time: %.2f us", static_cast<double>(averageFrameTime.count()));
+            ImGui::Text("Average Frame time: %dus", static_cast<unsigned long long>(averageFrameTime.count()));
 
             ImGui::End();
         }
