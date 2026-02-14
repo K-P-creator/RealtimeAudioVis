@@ -162,7 +162,7 @@ int main() {
             ImGui::Text("Frame time: %.2f us", static_cast<double>(frameTime.count()));
 
             ImGui::Text("Average FPS: %d", calculateFPS(static_cast<unsigned long long>(averageFrameTime.count())));
-            ImGui::Text("Frame time: %.2f us", static_cast<double>(averageFrameTime.count()));
+            ImGui::Text("Average Frame time: %.2f us", static_cast<double>(averageFrameTime.count()));
 
             ImGui::End();
         }
