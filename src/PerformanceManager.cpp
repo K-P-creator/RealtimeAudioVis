@@ -103,18 +103,21 @@ void PerformanceManager::writePerformanceData()     //  Writes to std::cout for 
     if (systemTimerRunning)
         systemRunTime = stopSystemTimer();
 
+    std::cout << std::endl
+              << std::endl;
     std::cout << "----------------------------------------------------\n";
     std::cout << "             Performance Summary\n";
     std::cout << "----------------------------------------------------\n";
-    std::cout << "System Runtime:      " << getSystemRunTime_s() << " s\n";
+    std::cout << "System Runtime:      " << getSystemRunTime() << "\n";
     std::cout << "Frames Measured:     " << frameCounter  << "\n";
     std::cout << "FFTs Measured:       " << fftCounter    << "\n";
     std::cout << "Renders Measured:    " << renderCounter << "\n";
     std::cout << std::endl;
     std::cout << "----------------------------------------------------\n";
-    std::cout << "Average Frame Time:  " << getAverageFrameTime() << " us\n";
-    std::cout << "Average FFT Time:    " << getAverageFFTTime() << " us\n";
-    std::cout << "Average Render Time: " << getAverageRenderTime() << " us\n";
+    std::cout << "Average Frame Time:  " << getAverageFrameTime() << "\n";
+    std::cout << "Average FPS:         " << static_cast<unsigned int>(1.0f / (static_cast<double>(getAverageFrameTime().count()) / 10e6)) << "\n";
+    std::cout << "Average FFT Time:    " << getAverageFFTTime() << "\n";
+    std::cout << "Average Render Time: " << getAverageRenderTime() << "\n";
 }
 
 
@@ -151,9 +154,10 @@ us PerformanceManager::getAverageFrameTime() const
     if (frameCounter == 0) return std::chrono::microseconds(0);
     return std::chrono::microseconds(frameTimeAccumulator_us/frameCounter);
 }
-unsigned long long PerformanceManager::getSystemRunTime_s() const
+
+std::chrono::seconds PerformanceManager::getSystemRunTime() const
 {
-    return (static_cast<unsigned long long>(systemRunTime.count()) / 1000000); // Divide by 10e6 to get seconds
+    return std::chrono::seconds(static_cast<int>(static_cast<double>(systemRunTime.count()) / 10e6)); // Divide by 10e6 to get seconds
 }
 
 
